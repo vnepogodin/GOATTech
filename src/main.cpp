@@ -19,7 +19,7 @@
 auto main(const int argc, char** argv) -> int32_t {
     // Initialize the server.
     constexpr uint16_t num_threads{1};
-    http::server2::server s("0.0.0.0", "7000", num_threads);
+    http::server2::server s("0.0.0.0", "7000", ".", num_threads);
 
     // Run the server until stopped.
     s.run();
