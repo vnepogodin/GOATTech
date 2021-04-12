@@ -21,14 +21,14 @@ constexpr const char* html_str = R"(
 
     <!-- Load React. -->
     <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
-    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <!-- Load our React component. -->
-    <script>
+    <script type="text/babel">
 'use strict';
-
-const e = React.createElement;
 
 class LikeButton extends React.Component {
   constructor(props) {
@@ -41,16 +41,16 @@ class LikeButton extends React.Component {
       return 'You liked this.';
     }
 
-    return e(
-      'button',
-      { onClick: () => this.setState({ liked: true }) },
-      'Like'
+    return (
+      <button onClick={() => this.setState({ liked: true }) }>
+        Like
+      </button>
     );
   }
 }
 
-const domContainer = document.querySelector('#like_button_container');
-ReactDOM.render(e(LikeButton), domContainer);
+let domContainer = document.querySelector('#like_button_container');
+ReactDOM.render(<LikeButton />, domContainer);
 </script>
 </body>
 </html>)";
