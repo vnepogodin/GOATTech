@@ -1,12 +1,12 @@
-StaticServer
-==================
+SportTech-overlay
+=================
 
-A cross-platform http static server based on boost asio example http server2. Now it's supporting large file(> 4G) downloading.
+A cross-platform http static server for SportTech overlay.
 
 How to build?
 ============
 
-**Boost(>= 1.50) should be installed.**
+**Boost(>= 1.70) should be installed.**
 
 Windows
 -------
