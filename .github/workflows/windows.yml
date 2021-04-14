@@ -11,6 +11,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: install_boost
+      run: curl -fsSL -o boost.exe https://deac-ams.dl.sourceforge.net/project/boost/boost-binaries/1.75.0/boost_1_75_0-msvc-14.2-64.exe; 7z x boost.exe -y -o"C:/Program Files/boost"
 
     - name: Configure CMake
       run: cmake -S . -B build -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -23,7 +25,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: install_clang
-        run: curl -fsSL -o LLVM10.exe https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe ; 7z x LLVM10.exe -y -o"C:/Program Files/LLVM"
+        run: curl -fsSL -o LLVM10.exe https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/LLVM-10.0.0-win64.exe; 7z x LLVM10.exe -y -o"C:/Program Files/LLVM"
+
+      - name: install_boost
+        run: curl -fsSL -o boost.exe https://deac-ams.dl.sourceforge.net/project/boost/boost-binaries/1.75.0/boost_1_75_0-msvc-14.2-64.exe; 7z x boost.exe -y -o"C:/Program Files/boost"
 
       - name: Configure CMake
         run: cmake -S . -B build -DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang++.exe" -G"MinGW Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -35,6 +40,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: install_boost
+        run: curl -fsSL -o boost.exe https://deac-ams.dl.sourceforge.net/project/boost/boost-binaries/1.75.0/boost_1_75_0-msvc-14.2-64.exe; 7z x boost.exe -y -o"C:/Program Files/boost"
 
       - name: Configure CMake
         run: cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -T ClangCL -DCMAKE_BUILD_TYPE=$BUILD_TYPE
