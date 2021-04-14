@@ -1,5 +1,5 @@
-#ifndef IO_SERVICE_POOL_HPP_
-#define IO_SERVICE_POOL_HPP_
+#ifndef SERVICE_POOL_HPP_
+#define SERVICE_POOL_HPP_
 
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
