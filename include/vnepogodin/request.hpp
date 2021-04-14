@@ -1,24 +1,15 @@
-//
-// request.hpp
-// ~~~~~~~~~~~
-//
-// Copyright (c) 2003-2014 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
+#ifndef REQUEST_HPP_
+#define REQUEST_HPP_
 
-#ifndef HTTP_SERVER2_REQUEST_HPP
-#define HTTP_SERVER2_REQUEST_HPP
-
-#include <vnepogodin/header.hpp>
 #include <string>
 #include <vector>
+#include <vnepogodin/header.hpp>
 
+namespace vnepogodin {
 namespace http {
-namespace server2 {
 
-/// A request received from a client.
+// A request received from a client.
+//
 struct request {
     std::string method;
     std::string uri;
@@ -27,7 +18,7 @@ struct request {
     std::vector<header> headers;
 };
 
-}  // namespace server2
 }  // namespace http
+}  // namespace vnepogodin
 
-#endif  // HTTP_SERVER2_REQUEST_HPP
+#endif  // REQUEST_HPP_

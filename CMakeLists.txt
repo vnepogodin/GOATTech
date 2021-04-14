@@ -29,7 +29,7 @@ include(ExternalProject)
 include(FindThreads)
 
 find_package(Threads REQUIRED)
-find_package(Boost COMPONENTS system filesystem thread REQUIRED)
+find_package(Boost COMPONENTS system REQUIRED)
 
 ##
 ## OPTIONS
@@ -69,9 +69,8 @@ set(VNEPOGODIN_SS_INCLUDE_BUILD_DIR "${PROJECT_SOURCE_DIR}/include")
 set(VNEPOGODIN_SS_HEADERS
     ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/header.hpp
     ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/html.hpp
-    ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/mime_types.hpp
     ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/connection.hpp
-    ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/io_service_pool.hpp
+    ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/service_pool.hpp
     ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/reply.hpp
     ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/request.hpp
     ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/request_handler.hpp
@@ -79,17 +78,13 @@ set(VNEPOGODIN_SS_HEADERS
     ${VNEPOGODIN_SS_INCLUDE_BUILD_DIR}/vnepogodin/server.hpp
 )
 set(VNEPOGODIN_SS_SOURCES
-    ${SS_SOURCES_DIR}/html.cpp
-    ${SS_SOURCES_DIR}/mime_types.cpp
     ${SS_SOURCES_DIR}/connection.cpp
-    ${SS_SOURCES_DIR}/io_service_pool.cpp
     ${SS_SOURCES_DIR}/reply.cpp
     ${SS_SOURCES_DIR}/request_handler.cpp
     ${SS_SOURCES_DIR}/request_parser.cpp
     ${SS_SOURCES_DIR}/server.cpp
     
     ${SS_SOURCES_DIR}/main.cpp
-
 )
 
 ##

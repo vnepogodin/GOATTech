@@ -1,76 +1,81 @@
-//
-// connection.hpp
-// ~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2014 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
-#ifndef HTTP_SERVER2_CONNECTION_HPP
-#define HTTP_SERVER2_CONNECTION_HPP
+#ifndef CONNECTION_HPP_
+#define CONNECTION_HPP_
 
 #include <vnepogodin/reply.hpp>
 #include <vnepogodin/request.hpp>
-#include <vnepogodin/request_handler.hpp>
 #include <vnepogodin/request_parser.hpp>
 
-#include <boost/array.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include <boost/bind/bind.hpp>
 
+#include <array>
+
+namespace vnepogodin {
 namespace http {
-namespace server2 {
+class request_handler;
 
-/// Represents a single connection from a client.
+// Represents a single connection from a client.
+//
 class connection
-  : public boost::enable_shared_from_this<connection> {
+  : public std::enable_shared_from_this<connection> {
  public:
-    /// Construct a connection with the given io_service.
-    explicit connection(boost::asio::io_service& io_service,
-                        request_handler& handler);
+    // Constructor
+    //
+    inline connection(boost::asio::io_service& io_service, request_handler& handler)
+      : m_socket(io_service),
+        m_req_handler(handler) {}
 
-    /// Get the socket associated with the connection.
-    inline auto socket() noexcept -> boost::asio::ip::tcp::socket&
-    { return socket_; }
+    // Get the socket associated with the connection.
+    //
+    inline auto socket() noexcept -> boost::asio::ip::tcp::socket& {
+        return m_socket;
+    }
 
-    /// Start the first asynchronous operation for the connection.
-    void start();
+    // The first asynchronous operation.
+    //
+    inline void start() noexcept {
+        m_socket.async_read_some(boost::asio::buffer(m_buffer),
+                                 boost::bind(&connection::handle_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+    }
 
     connection(const connection&) = delete;
     constexpr auto operator=(const connection&) -> connection& = delete;
 
  private:
-    /// Handle completion of a read operation.
+    boost::asio::ip::tcp::socket m_socket;
+
+    // The handler used to process the incoming request.
+    //
+    request_handler& m_req_handler;
+
+    // Buffer of incoming data.
+    //
+    std::array<char, 8192> m_buffer;
+
+    // The incoming request.
+    //
+    request m_request;
+
+    // The parser for the incoming request.
+    //
+    request_parser m_req_parser;
+
+    // The reply to be send back to the client.
+    //
+    reply m_reply;
+
+    // Handle completion of a read operation.
+    //
     void handle_read(const boost::system::error_code& e,
                      std::size_t bytes_transferred);
 
-    /// Handle completion of a write operation.
+    // Handle completion of a write operation.
+    //
     void handle_write(const boost::system::error_code& e);
-
-    /// Socket for the connection.
-    boost::asio::ip::tcp::socket socket_;
-
-    /// The handler used to process the incoming request.
-    request_handler& request_handler_;
-
-    /// Buffer for incoming data.
-    boost::array<char, 8192> buffer_;
-
-    /// The incoming request.
-    request request_;
-
-    /// The parser for the incoming request.
-    request_parser request_parser_;
-
-    /// The reply to be sent back to the client.
-    reply reply_;
 };
 
-using connection_ptr = boost::shared_ptr<connection>;
+using connection_ptr = std::shared_ptr<connection>;
 
-}  // namespace server2
 }  // namespace http
+}  // namespace vnepogodin
 
-#endif  // HTTP_SERVER2_CONNECTION_HPP
+#endif  // CONNECTION_HPP_

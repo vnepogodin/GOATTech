@@ -1,15 +1,5 @@
-//
-// reply.hpp
-// ~~~~~~~~~
-//
-// Copyright (c) 2003-2014 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
-#ifndef HTTP_SERVER2_REPLY_HPP
-#define HTTP_SERVER2_REPLY_HPP
+#ifndef REPLY_HPP_
+#define REPLY_HPP_
 
 #include <vnepogodin/header.hpp>
 
@@ -18,12 +8,11 @@
 #include <string>
 #include <vector>
 
+namespace vnepogodin {
 namespace http {
-namespace server2 {
 
-/// A reply to be sent to a client.
+// A reply to be sent to a client.
 struct reply {
-    /// The status of the reply.
     enum status_type {
         ok = 200,
         created = 201,
@@ -43,18 +32,18 @@ struct reply {
         service_unavailable = 503
     } status;
 
-    /// The headers to be included in the reply.
-    std::vector<header> headers;
+    // The headers to be included in the reply.
+    std::array<header, 2> headers;
 
-    /// The content to be sent in the reply.
+    // The content to be sent in the reply.
     std::string content;
 
-    /// Convert the reply into a vector of buffers. The buffers do not own the
-    /// underlying memory blocks, therefore the reply object must remain valid and
-    /// not be changed until the write operation has completed.
+    // Convert the reply into a vector of buffers. The buffers do not own the
+    // underlying memory blocks, therefore the reply object must remain valid and
+    // not be changed until the write operation has completed.
     std::vector<boost::asio::const_buffer> to_buffers();
 
-    /// Get a stock reply.
+    // Get a stock reply.
     static reply stock_reply(status_type status);
 
     struct {
@@ -64,7 +53,7 @@ struct reply {
     } file;
 };
 
-}  // namespace server2
 }  // namespace http
+}  // namespace vnepogodin
 
-#endif  // HTTP_SERVER2_REPLY_HPP
+#endif  // REPLY_HPP_

@@ -1,51 +1,29 @@
-//
-// connection.cpp
-// ~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2014 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-
 #include <vnepogodin/connection.hpp>
 #include <vnepogodin/request_handler.hpp>
 
-#include <boost/bind.hpp>
 #include <boost/interprocess/mapped_region.hpp>
-#include <vector>
 
+namespace vnepogodin {
 namespace http {
-namespace server2 {
-
-connection::connection(boost::asio::io_service& io_service,
-                       request_handler& handler)
-  : socket_(io_service),
-    request_handler_(handler) {}
-
-void connection::start() {
-    socket_.async_read_some(boost::asio::buffer(buffer_),
-                            boost::bind(&connection::handle_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-}
 
 void connection::handle_read(const boost::system::error_code& e,
                              std::size_t bytes_transferred) {
     if (!e) {
         boost::tribool result;
-        boost::tie(result, boost::tuples::ignore) = request_parser_.parse(
-            request_,
-            buffer_.data(),
-            buffer_.data() + bytes_transferred);
+        std::tie(result, std::ignore) = m_req_parser.parse(
+            m_request,
+            m_buffer.data(),
+            m_buffer.data() + bytes_transferred);
 
         if (result) {
-            request_handler_.handle_request(request_, reply_);
-            boost::asio::async_write(socket_, reply_.to_buffers(), boost::bind(&connection::handle_write, shared_from_this(), boost::asio::placeholders::error));
+            m_req_handler.handle_request(m_reply);
+            boost::asio::async_write(m_socket, m_reply.to_buffers(), std::bind(&connection::handle_write, shared_from_this(), std::placeholders::_1));
         } else if (!result) {
-            reply_ = reply::stock_reply(reply::bad_request);
-            boost::asio::async_write(socket_, reply_.to_buffers(), boost::bind(&connection::handle_write, shared_from_this(), boost::asio::placeholders::error));
+            m_reply = reply::stock_reply(reply::bad_request);
+            boost::asio::async_write(m_socket, m_reply.to_buffers(), std::bind(&connection::handle_write, shared_from_this(), std::placeholders::_1));
         } else {
-            socket_.async_read_some(boost::asio::buffer(buffer_),
-                                    boost::bind(&connection::handle_read, shared_from_this(), boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+            m_socket.async_read_some(boost::asio::buffer(m_buffer),
+                                     std::bind(&connection::handle_read, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
         }
     }
 
@@ -57,23 +35,23 @@ void connection::handle_read(const boost::system::error_code& e,
 
 void connection::handle_write(const boost::system::error_code& e) {
     if (!e) {
-        if (reply_.file.file_mapping && reply_.file.file_size > reply_.file.processed) {
-            uint64_t mlen = reply_.file.file_size - reply_.file.processed;
-            if (mlen > MEM_CACHE_SIZE) {
-                mlen = MEM_CACHE_SIZE;
+        if (m_reply.file.file_mapping && (m_reply.file.file_size > m_reply.file.processed)) {
+            uint64_t mem_len = m_reply.file.file_size - m_reply.file.processed;
+            if (mem_len > MEM_CACHE_SIZE) {
+                mem_len = MEM_CACHE_SIZE;
             }
-            boost::interprocess::mapped_region region(*reply_.file.file_mapping, boost::interprocess::read_only, reply_.file.processed, mlen);
+            boost::interprocess::mapped_region region(*m_reply.file.file_mapping, boost::interprocess::read_only, m_reply.file.processed, mem_len);
             uint64_t processed = region.get_size();
-            reply_.content.assign((const char*)region.get_address(), processed);
-            reply_.file.processed += processed;
-            boost::asio::async_write(socket_, boost::asio::buffer(reply_.content), boost::bind(&connection::handle_write, shared_from_this(), boost::asio::placeholders::error));
+            m_reply.content.assign((const char*)region.get_address(), processed);
+            m_reply.file.processed += processed;
+            boost::asio::async_write(m_socket, boost::asio::buffer(m_reply.content), std::bind(&connection::handle_write, shared_from_this(), std::placeholders::_1));
         } else {
             // Initiate graceful connection closure.
             boost::system::error_code ignored_ec;
-            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
+            m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
         }
     }
 }
 
-}  // namespace server2
 }  // namespace http
+}  // namespace vnepogodin
