@@ -18,7 +18,7 @@ jobs:
         cd "C:/Program Files/boost-source"
         .\bootstrap.bat --with-libraries=system
         b2 threading=multi link=static address-model=64 variant=release toolset=msvc --prefix="C:/Program Files/boost" -d0
-      shell: powershell
+      shell: cmd
 
     - name: Configure CMake
       run: cmake -S . -B build -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -40,7 +40,7 @@ jobs:
           cd "C:/Program Files/boost-source"
           .\bootstrap.bat --with-libraries=system
           b2 threading=multi link=static address-model=64 variant=release toolset=msvc --prefix="C:/Program Files/boost" -d0
-        shell: powershell
+        shell: cmd
 
       - name: Configure CMake
         run: cmake -S . -B build -DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang++.exe" -G"MinGW Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
@@ -60,7 +60,7 @@ jobs:
           cd "C:/Program Files/boost-source"
           .\bootstrap.bat --with-libraries=system
           b2 threading=multi link=static address-model=64 variant=release toolset=msvc --prefix="C:/Program Files/boost" -d0
-        shell: powershell
+        shell: cmd
 
       - name: Configure CMake
         run: cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -T ClangCL -DCMAKE_BUILD_TYPE=$BUILD_TYPE
