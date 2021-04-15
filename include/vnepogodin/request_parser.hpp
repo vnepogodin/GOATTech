@@ -27,8 +27,8 @@ class request_parser {
     // input has been consumed.
     template<typename InputIterator>
     std::tuple<boost::tribool, InputIterator> parse(request& req,
-                                                    InputIterator begin,
-                                                    InputIterator end) {
+                                             InputIterator begin,
+                                             InputIterator end) {
         while (begin != end) {
             boost::tribool result = consume(req, *begin++);
             if (result || !result)

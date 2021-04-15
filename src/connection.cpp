@@ -37,6 +37,8 @@ void connection::handle_write(const boost::system::error_code& e) {
     if (!e) {
         if (m_reply.file.file_mapping && (m_reply.file.file_size > m_reply.file.processed)) {
             uint64_t mem_len = m_reply.file.file_size - m_reply.file.processed;
+
+            constexpr auto MEM_CACHE_SIZE{1024 * 1024};
             if (mem_len > MEM_CACHE_SIZE) {
                 mem_len = MEM_CACHE_SIZE;
             }

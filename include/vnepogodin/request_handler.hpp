@@ -8,10 +8,7 @@
 namespace vnepogodin {
 namespace http {
 
-constexpr auto MEM_CACHE_SIZE{1024 * 1024};
-
-class request_handler {
- public:
+struct request_handler {
     // Construct with a directory containing files to be served.
     explicit request_handler() = default;
 
@@ -20,8 +17,6 @@ class request_handler {
 
     request_handler(const request_handler&) = delete;
     constexpr auto operator=(const request_handler&) -> request_handler& = delete;
-
- private:
 };
 
 }  // namespace http
