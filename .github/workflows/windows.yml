@@ -16,7 +16,7 @@ jobs:
         curl -fsSL -o boost.7z https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.7z
         7z x boost.7z -y -o"C:/Program Files"
         rename "C:/Program Files/boost_1_75_0" "C:/Program Files/boost-source"
-        cd "C:/Program Files/boost-source/tools/build"
+        cd "C:/Program Files/boost-source"
         .\bootstrap.bat --with-libraries=system
         b2 threading=multi link=static address-model=64 variant=release toolset=msvc --prefix="C:/Program Files/boost" -d0
       shell: cmd
@@ -39,7 +39,7 @@ jobs:
           curl -fsSL -o boost.7z https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.7z
           7z x boost.7z -y -o"C:/Program Files"
           rename "C:/Program Files/boost_1_75_0" "C:/Program Files/boost-source"
-          cd "C:/Program Files/boost-source/tools/build"
+          cd "C:/Program Files/boost-source"
           .\bootstrap.bat --with-libraries=system
           b2 threading=multi link=static address-model=64 variant=release toolset=msvc --prefix="C:/Program Files/boost" -d0
         shell: cmd
@@ -60,7 +60,7 @@ jobs:
           curl -fsSL -o boost.7z https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.7z
           7z x boost.7z -y -o"C:/Program Files"
           rename "C:/Program Files/boost_1_75_0" "C:/Program Files/boost-source"
-          cd "C:/Program Files/boost-source/tools/build"
+          cd "C:/Program Files/boost-source"
           .\bootstrap.bat --with-libraries=system
           b2 threading=multi link=static address-model=64 variant=release toolset=msvc --prefix="C:/Program Files/boost" -d0
         shell: cmd
