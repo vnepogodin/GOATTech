@@ -13,14 +13,15 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --release
-      - name: Upload executable
-        run: |
-          cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-macos
-          ./.github/workflows/upload_asset.sh \
-          ./SportTech-overlay-${GITHUB_REF##*/}-macos $GITHUB_TOKEN
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --release
+    - name: Upload executable
+      run: |
+        cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-macos
+        ./.github/workflows/upload_asset.sh \
+        ./SportTech-overlay-${GITHUB_REF##*/}-macos $GITHUB_TOKEN
+      shell: bash
 
   windows:
     runs-on: windows-latest
@@ -30,24 +31,25 @@ jobs:
         shell: bash
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --release
-      - name: Upload executable
-        run: |
-          cp ./target/release/sport_tech_overlay.exe ./SportTech-overlay-${GITHUB_REF##*/}.exe
-          ./.github/workflows/upload_asset.sh \
-          ./SportTech-overlay-${GITHUB_REF##*/}.exe $GITHUB_TOKEN
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --release
+    - name: Upload executable
+      run: |
+        cp ./target/release/sport_tech_overlay.exe ./SportTech-overlay-${GITHUB_REF##*/}.exe
+        ./.github/workflows/upload_asset.sh \
+        ./SportTech-overlay-${GITHUB_REF##*/}.exe $GITHUB_TOKEN
 
   linux:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --release
-      - name: Upload executable
-        run: |
-          cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-linux
-          ./.github/workflows/upload_asset.sh \
-          ./SportTech-overlay-${GITHUB_REF##*/}-linux $GITHUB_TOKEN
+    - uses: actions/checkout@v2
+    - name: Build
+      run: cargo build --release
+    - name: Upload executable
+      run: |
+        cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-linux
+        ./.github/workflows/upload_asset.sh \
+        ./SportTech-overlay-${GITHUB_REF##*/}-linux $GITHUB_TOKEN
+      shell: bash
