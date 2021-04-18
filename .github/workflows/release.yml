@@ -9,47 +9,67 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  macos:
-    runs-on: macos-latest
+  build:
+    name: Build release
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [linux, macos, windows]
+        include:
+          - build: linux
+            os: ubuntu-latest
+            rust: stable
+          - build: macos
+            os: macos-latest
+            rust: stable
+          - build: windows
+            os: windows-latest
+            rust: stable
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --release
-    - name: Upload executable
-      run: |
-        cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-macos
-        sudo bash ./.github/workflows/upload_asset.sh \
-        ./SportTech-overlay-${GITHUB_REF##*/}-macos $GITHUB_TOKEN
+    - uses: actions/checkout@v1
+
+    - name: Install Rust (rustup)
+      run: rustup update ${{ matrix.rust }} --no-self-update && rustup default ${{ matrix.rust }}
+      if: matrix.os != 'macos-latest'
       shell: bash
 
-  windows:
-    runs-on: windows-latest
-
-    defaults:
-      run:
-        shell: bash
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --release
-    - name: Upload executable
+    - name: Install Rust (macos)
+      # As of 7.12.2019 rust is not installed on MacOS
+      # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/software-installed-on-github-hosted-runners#macos-1015
       run: |
-        cp ./target/release/sport_tech_overlay.exe ./SportTech-overlay-${GITHUB_REF##*/}.exe
-        ./.github/workflows/upload_asset.sh \
-        ./SportTech-overlay-${GITHUB_REF##*/}.exe $GITHUB_TOKEN
+        curl https://sh.rustup.rs | sh -s -- -y
+        echo "##[add-path]$HOME/.cargo/bin"
+      if: matrix.os == 'macos-latest'
 
-  linux:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
     - name: Build
-      run: cargo build --release
-    - name: Upload executable
-      run: |
-        cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-linux
-        sudo /bin/bash ./.github/workflows/upload_asset.sh \
-        ./SportTech-overlay-${GITHUB_REF##*/}-linux $GITHUB_TOKEN
-      shell: bash
+      run: cargo build --verbose --release
+
+    - name: Create artifact directory
+      run: mkdir artifacts
+
+    - name: Create archive for Linux
+      run: 7z a -ttar -so -an ./target/release/${{ env.RELEASE_BIN }} ${{ env.RELEASE_ADDS }} | 7z a -si ./artifacts/${{ env.RELEASE_BIN }}-linux-x86_64.tar.gz
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Create archive for Windows
+      run: 7z a -tzip ./artifacts/${{ env.RELEASE_BIN }}-windows-x86_64.zip ./target/release/${{ env.RELEASE_BIN }}.exe ${{ env.RELEASE_ADDS }}
+      if: matrix.os == 'windows-latest'
+
+    - name: Install p7zip
+      # 7Zip not available on MacOS, install p7zip via homebrew.
+      run: brew install p7zip
+      if: matrix.os == 'macos-latest'
+
+    - name: Create archive for MacOS
+      run: 7z a -tzip ./artifacts/${{ env.RELEASE_BIN }}-mac-x86_64.zip ./target/release/${{ env.RELEASE_BIN }} ${{ env.RELEASE_ADDS }}
+      if: matrix.os == 'macos-latest'
+
+    # This will double-zip
+    # See - https://github.com/actions/upload-artifact/issues/39
+    - uses: actions/upload-artifact@v1
+      name: Upload archive
+      with:
+        name: ${{ runner.os }}
+        path: artifacts/
