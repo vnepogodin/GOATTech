@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.SECRET_CI }}
+  CARGO_TERM_COLOR: always
+
+jobs:
+  macos:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --release
+      - name: Upload executable
+        run: |
+          cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-macos
+          ./.github/workflows/upload_asset.sh ./SportTech-overlay-${GITHUB_REF##*/}-macos $GITHUB_TOKEN
+
+  windows:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --release
+      - name: Upload executable
+        run: |
+          cp ./target/release/sport_tech_overlay.exe ./SportTech-overlay-${GITHUB_REF##*/}.exe
+          ./.github/workflows/upload_asset.sh \
+          ./SportTech-overlay-${GITHUB_REF##*/}.exe $GITHUB_TOKEN
+
+  linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: cargo build --release
+      - name: Upload executable
+        run: |
+          cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-linux
+          ./.github/workflows/upload_asset.sh ./SportTech-overlay-${GITHUB_REF##*/}-linux $GITHUB_TOKEN

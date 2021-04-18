@@ -1,31 +1,33 @@
-/*
- * Copyright (C) 2021 Vladislav Nepogodin
- *
- * This file is part of SportTech overlay project.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
+// Copyright (C) 2021 Vladislav Nepogodin
+//
+// This file is part of SportTech overlay project.
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef HTML_HPP_
-#define HTML_HPP_
+use std::io::prelude::*;
+use std::net::TcpListener;
+use std::net::TcpStream;
 
-#include <string_view>
+use crate::http::service_pool::ServicePool;
 
-namespace vnepogodin {
-namespace {
-constexpr const char* html_str = R"(
+pub mod service_pool;
+pub mod worker;
+
+use std::str;
+
+const HTML_STR: &str = r#"
 <!DOCTYPE html>
 <html>
   <head>
@@ -150,13 +152,48 @@ ReactDOM.render(
   document.querySelector('#root')
 );
 </script>
-)";
+"#;
+
+fn handle_connection(mut stream: TcpStream) {
+    let mut buffer = [0; 1024];
+    stream.read(&mut buffer).unwrap();
+
+    const GET: &[u8; 16] = b"GET / HTTP/1.1\r\n";
+
+    let (status_line, contents): (&'static str, &'static str) = if buffer.starts_with(GET) {
+        ("HTTP/1.1 200 OK\r\n\r\n", HTML_STR)
+    } else {
+        ("HTTP/1.1 404 NOT FOUND\r\n\r\n", "404 Not found")
+    };
+    let response = format!("{}{}", status_line, contents);
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
 
-constexpr auto get_html() noexcept -> std::string_view {
-    return html_str;
+pub struct Server {
+    listener: TcpListener,
+    pool: ServicePool,
 }
 
-}  // namespace vnepogodin
+impl Server {
+    // Construct the server to listen on the specified TCP address and port, and
+    // serve up files from the given directory.
+    //
+    pub fn new(address: &'static str, port: &'static str, pool_size: usize) -> Server {
+        let listener = TcpListener::bind(format!("{}:{}", address, port)).unwrap();
+        let pool = ServicePool::new(pool_size);
 
-#endif  // HTML_HPP_
+        Server { listener, pool }
+    }
+
+    pub fn run(&self) {
+        for stream in self.listener.incoming() {
+            let stream = stream.unwrap();
+
+            self.pool.execute(|| {
+                handle_connection(stream);
+            });
+        }
+    }
+}
