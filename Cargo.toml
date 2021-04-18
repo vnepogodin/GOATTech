@@ -1,6 +1,6 @@
 [package]
 name = "sport_tech_overlay"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Vladislav Nepogodin <nepogodin.vlad@gmail.com>"]
 edition = "2018"
 
