@@ -19,7 +19,8 @@ jobs:
       - name: Upload executable
         run: |
           cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-macos
-          ./.github/workflows/upload_asset.sh ./SportTech-overlay-${GITHUB_REF##*/}-macos $GITHUB_TOKEN
+          ./.github/workflows/upload_asset.sh \
+          ./SportTech-overlay-${GITHUB_REF##*/}-macos $GITHUB_TOKEN
 
   windows:
     runs-on: windows-latest
@@ -48,4 +49,5 @@ jobs:
       - name: Upload executable
         run: |
           cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-linux
-          ./.github/workflows/upload_asset.sh ./SportTech-overlay-${GITHUB_REF##*/}-linux $GITHUB_TOKEN
+          ./.github/workflows/upload_asset.sh \
+          ./SportTech-overlay-${GITHUB_REF##*/}-linux $GITHUB_TOKEN
