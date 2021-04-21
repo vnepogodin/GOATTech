@@ -1,4 +1,4 @@
-# SportTech-overlay
+# SportTech-overlay [![CI](https://github.com/vnepogodin/SportTech-overlay/workflows/CI/badge.svg)](https://github.com/vnepogodin/SportTech-overlay/actions/workflows/ci.yml)
 
 A cross-platform http static server for SportTech overlay.
 
