@@ -16,16 +16,18 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+// silence warnings from the `unused_io_amount` clippy lint
+#![allow(clippy::unused_io_amount)]
+
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
+use std::str;
 
 use crate::http::service_pool::ServicePool;
 
 pub mod service_pool;
 pub mod worker;
-
-use std::str;
 
 const HTML_STR: &str = r#"
 <!DOCTYPE html>
@@ -154,6 +156,7 @@ ReactDOM.render(
 </script>
 "#;
 
+/// Handle incoming connection.
 fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
     stream.read(&mut buffer).unwrap();
@@ -167,31 +170,38 @@ fn handle_connection(mut stream: TcpStream) {
     };
     let response = format!("{}{}", status_line, contents);
 
-    stream.write(response.as_bytes()).unwrap();
+    stream.write_all(response.as_bytes()).unwrap();
     stream.flush().unwrap();
 }
 
+#[derive(Debug)]
 pub struct Server {
+    /// Server listener.
     listener: TcpListener,
+
+    /// Pool of workers.
     pool: ServicePool,
 }
 
 impl Server {
-    // Construct the server to listen on the specified TCP address and port, and
-    // serve up files from the given directory.
-    //
-    pub fn new(address: &'static str, port: &'static str, pool_size: usize) -> Server {
+    /// Create a new server.
+    ///
+    /// This creates a server to listen on the specified TCP address and port
+    #[inline]
+    pub fn new(address: &'static str, port: &'static str, pool_size: usize) -> Self {
         let listener = TcpListener::bind(format!("{}:{}", address, port)).unwrap();
         let pool = ServicePool::new(pool_size);
 
-        Server { listener, pool }
+        Self { listener, pool }
     }
 
+    /// Start listening.
+    #[inline]
     pub fn run(&self) {
         for stream in self.listener.incoming() {
             let stream = stream.unwrap();
 
-            self.pool.execute(|| {
+            self.pool.execute(move || {
                 handle_connection(stream);
             });
         }

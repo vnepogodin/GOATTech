@@ -21,20 +21,31 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 
-pub type Job = Box<dyn FnOnce() + Send + 'static>;
+type Job = Box<dyn FnOnce() + Send + 'static>;
 
+/// Worker messages.
 pub enum Message {
+    /// Do work.
     NewJob(Job),
+
+    /// Safely terminate worker.
     Terminate,
 }
 
+#[derive(Debug)]
 pub struct Worker {
+    /// Thread id.
     pub id: usize,
+
+    /// Likely thread.
     pub thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Worker {
-    pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Worker {
+    /// Create a new Worker.
+    ///
+    /// The receiver is the message handler.
+    pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Message>>>) -> Self {
         let thread = thread::spawn(move || loop {
             let message = receiver.lock().unwrap().recv().unwrap();
 
@@ -44,6 +55,6 @@ impl Worker {
             }
         });
 
-        Worker { id, thread: Some(thread) }
+        Self { id, thread: Some(thread) }
     }
 }

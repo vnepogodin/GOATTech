@@ -16,15 +16,19 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-use crate::http::worker::Message;
-use crate::http::worker::Worker;
-
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+use crate::http::worker::Message;
+use crate::http::worker::Worker;
+
+#[derive(Debug)]
 pub struct ServicePool {
+    /// Threads in the pool.
     workers: Vec<Worker>,
+
+    /// Message sender to Worker.
     sender: mpsc::Sender<Message>,
 }
 
@@ -36,7 +40,7 @@ impl ServicePool {
     /// # Panics
     ///
     /// The `new` function will panic if the size is zero.
-    pub fn new(size: usize) -> ServicePool {
+    pub fn new(size: usize) -> Self {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
@@ -48,9 +52,10 @@ impl ServicePool {
             workers.push(Worker::new(id, Arc::clone(&receiver)));
         }
 
-        ServicePool { workers, sender }
+        Self { workers, sender }
     }
 
+    #[inline]
     pub fn execute<F>(&self, f: F)
     where
         F: FnOnce() + Send + 'static,
@@ -61,6 +66,7 @@ impl ServicePool {
     }
 }
 
+/// Terminate all workers.
 impl Drop for ServicePool {
     fn drop(&mut self) {
         for _ in &self.workers {
