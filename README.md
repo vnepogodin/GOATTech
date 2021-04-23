@@ -45,7 +45,20 @@ The simplest way to start is to run this command:
 sport_tech_overlay
 ```
 
-The command above will start serving your current working directory on `127.0.0.1:7000` by default.
+The command above will start serving overlay on `http://localhost:7000` by default.
+
+### Displaying Overlays on your Stream (Adding to OBS)
+
+In order for overlays to display in your OBS client, you need to do the following:
+
+**OBS**
+1. Click the '+' under Sources
+2. Add a BrowserSource
+3. Point it at `http://localhost:7000`
+4. Adjust the width/height to be 16:9
+5. Click 'Ok' to Save
+
+After you've added the source (and made sure it's visible and on top of your stream), you should start seeing overlays show up. They show up with a transparent background so you won't see anything visible until you start triggering overlays.
 
 ## Contributing
 
