@@ -11,7 +11,7 @@ A cross-platform http static server for SportTech overlay.
 You can install the latest version (or a specific commit) of SportTech-overlay directly from GitHub.
 
 ```shell
-cargo install --git https://github.com/vnepogodin/SportTech-overlay.git
+cargo install --branch develop --git https://github.com/vnepogodin/SportTech-overlay.git
 ```
 
 [cargo]: https://doc.rust-lang.org/cargo/
