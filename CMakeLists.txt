@@ -30,6 +30,8 @@ else()
 endif()
 
 add_subdirectory(thirdparty/JoyShockLibrary)
+
+
 ##
 ## Target
 ##
@@ -43,7 +45,7 @@ add_executable(${PROJECT_NAME} ${GUI_TYPE}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/overlay.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/overlay_mouse.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/forms/overlay.ui ${CMAKE_CURRENT_SOURCE_DIR}/forms/overlay_mouse.ui
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/overlay.qrc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/overlay.qrc
     )
 
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})

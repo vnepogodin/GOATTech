@@ -3,27 +3,19 @@ name: CI
 on: [push, pull_request]
 
 env:
-  CARGO_TERM_COLOR: always
+  BUILD_TYPE: Debug
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build
-        run: |
-          cargo build
-      - name: Rustfmt
-        run: |
-          rustup component add rustfmt
-          cargo fmt
-      - name: Clippy
-        run: |
-          rustup component add clippy
-          cargo clippy --all-targets
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+
+      - name: Configure CMake
+        run: cmake -S . -B build -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      - name: Build CPP
+        run: cmake --build build --parallel 10
