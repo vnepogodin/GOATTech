@@ -20,7 +20,7 @@
 
 Пример, компиляция SportTech-overlay с cmake:
 
-``shell
+```shell
 cmake -S . -B build
 cmake --build build
 ```
@@ -34,7 +34,7 @@ cmake --build build
 
 Самый простой способ запуска-выполнить эту команду:
 
-``shell
+```shell
 overlay
 ```
 
