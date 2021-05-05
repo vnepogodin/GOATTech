@@ -22,13 +22,17 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <tlhelp32.h>
+#else
+#include <cstring>
+#include <dirent.h>
+#include <vector>
 #endif
 #include <fstream>
 #include <vnepogodin/thirdparty/json.hpp>
 
-#ifdef _WIN32
 namespace {
 std::string_view get_process_list() {
+#ifdef _WIN32
     // Take a snapshot of all processes in the system.
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
@@ -62,13 +66,53 @@ std::string_view get_process_list() {
     } while (Process32Next(hProcessSnap, &pe32));
 
     CloseHandle(hProcessSnap);
+
+#else
+    DIR* dir_proc = opendir("/proc/");
+    if (dir_proc == NULL) {
+        return "Unknown process";
+    }
+
+    // Retrieve information about the first process,
+    // and exit if unsuccessful
+    struct dirent* dir_entity = readdir(dir_proc);
+
+    // Now walk the snapshot of processes, and
+    // display information about each process in turn
+    const std::unordered_map<std::string_view, std::string_view> process_map = {
+        {"dota", "Dota"},
+        {"csgo", "Counter-Strike: Global Offensive"}};
+    do {
+        if (dir_entity->d_type == DT_DIR) {
+            const std::string& chrarry_CommandLinePath = "/proc/" + std::string(dir_entity->d_name) + "/cmdline";
+            std::ifstream in(std::string(chrarry_CommandLinePath), std::ios_base::in);
+            if (in) {
+                const std::vector<std::uint8_t> buffer(std::istreambuf_iterator<char>(in), {});
+                std::string exe(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+                const char* found = strrchr(exe.data(), '/');
+                if (found) {
+                    exe = found + 1;
+                }
+
+                for (const auto& [process, name] : process_map) {
+                    if (process == exe) {
+                        closedir(dir_proc);
+                        return name;
+                    }
+                }
+            }
+        }
+    } while ((dir_entity = readdir(dir_proc)));
+    closedir(dir_proc);
+#endif
     return "Unknown process";
 }
 }  // namespace
-#endif
+
 class Logger {
  public:
     Logger() {
+        /* clang-format off */
         this->j = {
             {"name", ""},
             {"numOfTouch", {
@@ -85,11 +129,19 @@ class Logger {
                 {"right_button", 0},
                 {"middle_button", 0},
                 {"x1_button", 0},
-                {"x2_button", 0},
+                {"x2_button", 0}
         }}};
+        /* clang-format on */
 #ifdef _WIN32
-        GetTempPathA(85, path);
-        j.at("name") = get_process_list();
+        char tmp_path[100]{};
+        GetTempPathA(85, this->path);
+        this->path = tmp_path;
+#else
+        this->path = "/tmp/";
+#endif
+        this->j.at("name") = get_process_list();
+#ifndef _NDEBUG
+        this->write();
 #endif
     }
 
@@ -104,12 +156,12 @@ class Logger {
     }
 
     auto get(const char* path) -> nlohmann::json& {
-        return j[path];
+        return this->j[path];
     }
 
  private:
-    char path[100]{};
-    nlohmann::json j{};
+    std::string_view path;
+    nlohmann::json j;
 };
 
 #endif  // LOGGER_HPP
