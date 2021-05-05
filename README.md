@@ -1,64 +1,44 @@
 # SportTech-overlay [![CI](https://github.com/vnepogodin/SportTech-overlay/workflows/CI/badge.svg)](https://github.com/vnepogodin/SportTech-overlay/actions/workflows/ci.yml)
 
-A cross-platform http static server for SportTech overlay.
+A input overlay which working without OBS Studio.
 
-## Installation
+## Compiling
 
-### Automatic
+Any C++20 compiler should work. For compilers with partial C++20 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2019 / GCC 10.2 then it will work.
 
-#### Cargo
+To build the GUI, you need Qt.
 
-You can install the latest version (or a specific commit) of SportTech-overlay directly from GitHub.
+When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 
-```shell
-cargo install --branch develop --git https://github.com/vnepogodin/SportTech-overlay.git
-```
+There are multiple compilation choices:
+* cmake - cross platform build tool
+* Windows: Visual Studio (VS 2019 and above)
+* Windows: Qt Creator + msvc
+* gnu make
+* g++ 10.2 (or later)
+* clang++
 
-[cargo]: https://doc.rust-lang.org/cargo/
+### cmake
 
-### Manual
-
-#### Prebuilt binaries
-
-Archives of prebuilt binaries are available on [GitHub Release][gh-release] for Linux, macOS and Windows. Download a compatible binary for your system.
-
-[gh-release]: https://github.com/vnepogodin/SportTech-overlay/releases
-
-#### Build from source
-
-SportTech-overlay is written in Rust. You need to [install Rust][install-rust] in order to compile it.
+Example, compiling SportTech-overlay with cmake:
 
 ```shell
-$ git clone https://github.com/vnepogodin/SportTech-overlay.git
-$ cd SportTech-overlay
-$ cargo build --release
-$ ./target/release/sport_tech_overlay
+cmake -S . -B build
+cmake --build build
 ```
 
-[install-rust]: https://www.rust-lang.org/install.html
+If you want to compile a release build.
+-DCMAKE_BUILD_TYPE=Release
+
+Using cmake you can generate project files for Visual Studio,XCode,etc.
 
 ## Usage
 
 The simplest way to start is to run this command:
 
 ```shell
-sport_tech_overlay
+overlay
 ```
-
-The command above will start serving overlay on `http://localhost:7000` by default.
-
-### Displaying Overlays on your Stream (Adding to OBS)
-
-In order for overlays to display in your OBS client, you need to do the following:
-
-**OBS**
-1. Click the '+' under Sources
-2. Add a BrowserSource
-3. Point it at `http://localhost:7000`
-4. Adjust the width/height to be 16:9
-5. Click 'Ok' to Save
-
-After you've added the source (and made sure it's visible and on top of your stream), you should start seeing overlays show up. They show up with a transparent background so you won't see anything visible until you start triggering overlays.
 
 ## Contributing
 

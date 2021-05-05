@@ -1,0 +1,42 @@
+{
+    "placement": [
+        {
+            "w_button": {
+                "x": 384,
+                "y": 0
+            },
+            "a_button": {
+                "x": 169,
+                "y": 182
+            },
+            "s_button": {
+                "x": 338,
+                "y": 182
+            },
+            "d_button": {
+                "x": 508,
+                "y": 182
+            },
+            "q_button": {
+                "x": 210,
+                "y": 0
+            },
+            "e_button": {
+                "x": 552,
+                "y": 0
+            },
+            "shift_button": {
+                "x": 0,
+                "y": 182
+            },
+            "ctrl_button": {
+                "x": 23,
+                "y": 360
+            },
+            "space_button": {
+                "x": 192,
+                "y": 360
+            }
+        }
+    ]
+}
