@@ -4,11 +4,9 @@ A input overlay which working without OBS Studio.
 
 ## Compiling
 
-Any C++20 compiler should work. For compilers with partial C++20 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2019 / GCC 10.2 then it will work.
+Any C++20 compiler should work. For compilers with partial C++20 support it may work. If your compiler has the C++20 features that are available in Visual Studio 2019 / GCC 10.2 then it will work.
 
 To build the GUI, you need Qt.
-
-When building the command line tool, [PCRE](http://www.pcre.org/) is optional. It is used if you build with rules.
 
 There are multiple compilation choices:
 * cmake - cross platform build tool
