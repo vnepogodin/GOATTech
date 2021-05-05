@@ -26,7 +26,7 @@ cmake --build build
 ```
 
 If you want to compile a release build.
--DCMAKE_BUILD_TYPE=Release
+`-DCMAKE_BUILD_TYPE=Release`
 
 Using cmake you can generate project files for Visual Studio,XCode,etc.
 

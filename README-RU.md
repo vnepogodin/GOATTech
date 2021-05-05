@@ -26,7 +26,7 @@ cmake --build build
 ```
 
 Если вы хотите скомпилировать релизную сборку.
--DCMAKE_BUILD_TYPE=Release
+`-DCMAKE_BUILD_TYPE=Release`
 
 С помощью cmake вы можете создавать файлы проектов для Visual Studio,XCode и т.д.
 
