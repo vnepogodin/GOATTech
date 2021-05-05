@@ -20,8 +20,8 @@
 #define OVERLAY_MOUSE_H
 
 #include <QWidget>
-#include <vnepogodin/logger.hpp>
 #include <thread>
+#include <vnepogodin/logger.hpp>
 
 #include <ui_overlay_mouse.h>
 

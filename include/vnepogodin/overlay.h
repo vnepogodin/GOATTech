@@ -19,10 +19,10 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
-#include <ui_overlay.h>
 #include <QWidget>
-#include <vnepogodin/logger.hpp>
 #include <thread>
+#include <ui_overlay.h>
+#include <vnepogodin/logger.hpp>
 
 namespace Ui {
 class Overlay;

@@ -21,6 +21,7 @@
 
 #include <vnepogodin/logger.hpp>
 #include <array>
+#include <mutex>
 #include <string_view>
 #include <unordered_map>
 
@@ -49,6 +50,9 @@ inline int round(const double& val) {
 }
 
 inline std::uint32_t get_key(Logger* logger) {
+    std::mutex m;
+    const std::lock_guard<std::mutex> lock(m);
+
     const std::array<std::uint32_t, 14> code_list = {
         key_code::W,
         key_code::A,

@@ -115,7 +115,8 @@ Overlay_mouse::~Overlay_mouse() {
 }
 
 void Overlay_mouse::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    const auto& button                                                                = utils::get_key(this->logger);
+    const auto& button = utils::get_key(this->logger);
+
     const std::unordered_map<uint8_t, std::pair<std::string_view, QPoint>> button_map = {
         {utils::key_code::LBUTTON, {"left_button", {10, 0}}},
         {utils::key_code::RBUTTON, {"right_button", {512, 0}}},

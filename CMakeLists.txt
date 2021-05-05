@@ -1,5 +1,17 @@
 cmake_minimum_required(VERSION 3.12)
-project(overlay)
+
+##
+## PROJECT
+## name and version
+##
+project(overlay
+        VERSION 0.6.0)
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+message(STATUS "BUILD: ${CMAKE_BUILD_TYPE}")
+
 
 ##
 ## INCLUDE
@@ -8,7 +20,6 @@ include(FindThreads)
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Svg REQUIRED)
-
 
 ##
 ## CONFIGURATION
@@ -23,6 +34,14 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /arch:AVX2 /fp:precise /LTCG:INCREMENTAL")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG /Od")
+else()
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -flto")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Og")
+endif()
+
 if(WIN32)
     find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
 else()
@@ -31,6 +50,10 @@ endif()
 
 add_subdirectory(thirdparty/JoyShockLibrary)
 
+add_library(project_warnings INTERFACE)
+
+include(src/cmake/CompilerWarnings.cmake)
+set_project_warnings(project_warnings)
 
 ##
 ## Target
