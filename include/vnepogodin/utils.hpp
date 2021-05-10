@@ -70,7 +70,7 @@ inline std::uint32_t get_key(Logger* logger) {
         key_code::X2BUTTON};
     for (const auto& code : code_list) {
 #ifdef _WIN32
-        if (GetAsyncKeyState(code & 0x8000)) {
+        if (GetAsyncKeyState(code)) {
             auto& j = logger->get("numOfTouch");
             switch (code) {
             case key_code::X1BUTTON:

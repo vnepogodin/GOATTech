@@ -134,7 +134,7 @@ class Logger {
         /* clang-format on */
 #ifdef _WIN32
         char tmp_path[100]{};
-        GetTempPathA(85, this->path);
+        GetTempPathA(85, tmp_path);
         this->path = tmp_path;
 #else
         this->path = "/tmp/";
