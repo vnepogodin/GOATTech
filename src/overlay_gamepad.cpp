@@ -1,14 +1,8 @@
-#include <cmath>
-#include <overlay_gamepad.h>
+#include <vnepogodin/utils.hpp>
+#include <vnepogodin/overlay_gamepad.h>
 #include <ui_overlay_gamepad.h>
 
 static constexpr auto MAX_PLAYERS = 12;
-
-namespace utils {
-inline int round(const double& val) {
-    return (val < 0) ? static_cast<int>(std::ceil(val - 0.5)) : static_cast<int>(std::floor(val + 0.5));
-}
-}  // namespace utils
 
 Overlay::Overlay(QWidget* parent) : QWidget(parent), ui(new Ui::Overlay) {
     ui->setupUi(this);
@@ -254,14 +248,14 @@ void Overlay::paintTouch(QPaintDevice* device, QPoint corner, double scale) {
 
     if (state.t0Down) {
         QPoint location = QPoint(
-            (int)round(((double)tl.x() + (double)(width * state.t0X)) * scale) + corner.x(),
-            (int)round(((double)tl.y() + (double)(height * state.t0Y)) * scale) + corner.y());
+            utils::round(((double)tl.x() + (double)(width * state.t0X)) * scale) + corner.x(),
+            utils::round(((double)tl.y() + (double)(height * state.t0Y)) * scale) + corner.y());
         paintAsset("cursor", location, this, corner, scale);
     }
     if (state.t1Down) {
         QPoint location = QPoint(
-            (int)round(((double)tl.x() + (double)(width * state.t1X)) * scale) + corner.x(),
-            (int)round(((double)tl.y() + (double)(height * state.t1Y)) * scale) + corner.y());
+            utils::round(((double)tl.x() + (double)(width * state.t1X)) * scale) + corner.x(),
+            utils::round(((double)tl.y() + (double)(height * state.t1Y)) * scale) + corner.y());
         paintAsset("cursor", location, this, corner, scale);
     }
 }

@@ -50,7 +50,7 @@ class Overlay : public QWidget {
     const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
     std::thread poll;
 
-    Logger* logger;
+    Logger *logger;
     std::unique_ptr<Ui::Overlay> ui = std::make_unique<Ui::Overlay>();
 
     /**
