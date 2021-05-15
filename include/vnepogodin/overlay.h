@@ -28,6 +28,7 @@ namespace Ui {
 class Overlay;
 }
 
+namespace vnepogodin {
 class Overlay : public QWidget {
     Q_OBJECT
 
@@ -110,5 +111,6 @@ class Overlay : public QWidget {
    */
     inline void paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale);
 };
+}
 
 #endif  // OVERLAY_H

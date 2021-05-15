@@ -15,6 +15,8 @@
 #include <QString>
 #include <QSvgRenderer>
 
+using namespace vnepogodin;
+
 Overlay::Overlay(QWidget* parent, Logger* log) : QWidget(parent), logger(log) {
     ui->setupUi(this);
     connectKeyboard();

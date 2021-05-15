@@ -109,6 +109,7 @@ std::string_view get_process_list() {
 }
 }  // namespace
 
+namespace vnepogodin {
 class Logger {
  public:
     Logger() {
@@ -163,5 +164,6 @@ class Logger {
     std::string_view path;
     nlohmann::json j;
 };
+}  // namespace vnepogodin
 
 #endif  // LOGGER_HPP

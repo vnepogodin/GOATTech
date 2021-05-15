@@ -46,9 +46,9 @@ class Ui_MainWindow {
     QWidget* widget;
     QVBoxLayout* verticalLayout;
     QSpacerItem* verticalSpacer;
-    Overlay* keyboard;
-    Logger* log;
-    Overlay_mouse* mouse;
+    vnepogodin::Overlay* keyboard;
+    vnepogodin::Logger* log;
+    vnepogodin::Overlay_mouse* mouse;
     QSpacerItem* horizontalSpacer;
     QMenuBar* menubar;
     QStatusBar* statusbar;
@@ -69,9 +69,9 @@ class Ui_MainWindow {
 
         verticalLayout->addItem(verticalSpacer);
 
-        log      = new Logger();
-        keyboard = new Overlay(widget, log);
-        mouse    = new Overlay_mouse(widget, log);
+        log      = new vnepogodin::Logger();
+        keyboard = new vnepogodin::Overlay(widget, log);
+        mouse    = new vnepogodin::Overlay_mouse(widget, log);
         keyboard->setObjectName(QString::fromUtf8("keyboard"));
         mouse->setObjectName(QString::fromUtf8("mouse"));
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -137,6 +137,7 @@ class MainWindow : public Ui_MainWindow { };
 
 QT_END_NAMESPACE
 
+namespace vnepogodin {
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -159,4 +160,6 @@ class MainWindow : public QMainWindow {
  private:
     std::unique_ptr<Ui::MainWindow> ui = std::make_unique<Ui::MainWindow>();
 };
+}  // namespace vnepogodin
+
 #endif  // MAINWINDOW_H_

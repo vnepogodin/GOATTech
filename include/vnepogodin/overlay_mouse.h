@@ -29,6 +29,7 @@ namespace Ui {
 class Overlay_mouse;
 }
 
+namespace vnepogodin {
 class Overlay_mouse : public QWidget {
     Q_OBJECT
 
@@ -118,5 +119,6 @@ class Overlay_mouse : public QWidget {
    */
     void paintTouch(QPaintDevice* device, QPoint corner, double scale);
 };
+}  // namespace vnepogodin
 
 #endif  // OVERLAY_MOUSE_H

@@ -16,6 +16,8 @@
 #include <QString>
 #include <QSvgRenderer>
 
+using namespace vnepogodin;
+
 Overlay_mouse::Overlay_mouse(QWidget* parent, Logger* log) : QWidget(parent), logger(log) {
     ui->setupUi(this);
     connectMouse();
