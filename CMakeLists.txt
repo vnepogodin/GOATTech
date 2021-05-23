@@ -47,7 +47,7 @@ if(UNIX AND CMAKE_GENERATOR STREQUAL "Ninja")
 endif()
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /arch:AVX2 /fp:precise /LTCG:INCREMENTAL /D_NDEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /arch:AVX2 /fp:precise /D_NDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG /Od")
 else()
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -flto -D_NDEBUG")
@@ -55,12 +55,13 @@ else()
 endif()
 
 if(WIN32)
-    find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
-else()
-    SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lhid -lhidapi-hidraw -lhidapi-libusb")
+    SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /LTCG:INCREMENTAL")
+#    find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
+#else()
+#    SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lhid -lhidapi-hidraw -lhidapi-libusb")
 endif()
 
-add_subdirectory(thirdparty/JoyShockLibrary)
+#add_subdirectory(thirdparty/JoyShockLibrary)
 
 add_library(project_warnings INTERFACE)
 
@@ -76,7 +77,7 @@ add_executable(${PROJECT_NAME} ${GUI_TYPE}
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/utils.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/thirdparty/json.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/overlay.h ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/overlay_mouse.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/mainwindow.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/mainwindow.h ${CMAKE_CURRENT_SOURCE_DIR}/src/mainwindow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/overlay.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/overlay_mouse.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/forms/overlay.ui ${CMAKE_CURRENT_SOURCE_DIR}/forms/overlay_mouse.ui
 
@@ -86,5 +87,5 @@ add_executable(${PROJECT_NAME} ${GUI_TYPE}
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg ${HIDAPI_LIBRARY} JoyShockLibrary ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_BINARY_DIR}/thirdparty/JoyShockLibrary ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi ${Qt5Widgets_INCLUDES})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg ${HIDAPI_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${Qt5Widgets_INCLUDES})

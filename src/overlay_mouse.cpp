@@ -18,7 +18,7 @@
 
 using namespace vnepogodin;
 
-Overlay_mouse::Overlay_mouse(QWidget* parent, Logger* log) : QWidget(parent), logger(log) {
+Overlay_mouse::Overlay_mouse(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
     connectMouse();
 }
@@ -112,12 +112,10 @@ void Overlay_mouse::paintLoop() {
 Overlay_mouse::~Overlay_mouse() {
     mouseConnected = false;
     poll.join();
-
-    delete logger;
 }
 
 void Overlay_mouse::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    const auto& button = utils::get_key(this->logger);
+    const auto& button = utils::get_key();
 
     const std::unordered_map<uint8_t, std::pair<std::string_view, QPoint>> button_map = {
         {utils::key_code::LBUTTON, {"left_button", {10, 0}}},

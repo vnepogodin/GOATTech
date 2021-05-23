@@ -17,7 +17,7 @@
 
 using namespace vnepogodin;
 
-Overlay::Overlay(QWidget* parent, Logger* log) : QWidget(parent), logger(log) {
+Overlay::Overlay(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
     connectKeyboard();
 }
@@ -113,7 +113,7 @@ Overlay::~Overlay() {
 }
 
 void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    const auto& button = utils::get_key(logger);
+    const auto& button = utils::get_key();
 
     const std::unordered_map<uint32_t, std::pair<std::string_view, QPoint>> button_map = {
         {utils::key_code::W, {"w_button", {384, 0}}},
@@ -130,9 +130,6 @@ void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
             const QPoint& location = QPoint(utils::round((double)asset.second.x() * scale) + corner.x(),
                 utils::round((double)asset.second.y() * scale) + corner.y());
             paintAsset(asset.first.data(), location, device, scale);
-
-            auto& j                  = logger->get("numOfTouch");
-            j.at(asset.first.data()) = j[asset.first.data()].get<int>() + 1;
         }
     }
 }

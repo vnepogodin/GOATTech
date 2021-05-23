@@ -21,12 +21,13 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <tlhelp32.h>
+#include <tlhelp32.h> // PROCESSENTRY32W, CreateToolhelp32Snapshot, Process32FirstW, Process32NextW
 #else
 #include <cstring>
 #include <dirent.h>
 #include <vector>
 #endif
+#include <chrono>
 #include <fstream>
 #include <vnepogodin/thirdparty/json.hpp>
 
@@ -37,12 +38,12 @@ std::string_view get_process_list() {
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     // Set the size of the structure before using it.
-    PROCESSENTRY32 pe32{};
-    pe32.dwSize = sizeof(PROCESSENTRY32);
+    PROCESSENTRY32W pe32{};
+    pe32.dwSize = sizeof(PROCESSENTRY32W);
 
     // Retrieve information about the first process,
     // and exit if unsuccessful
-    if (!Process32First(hProcessSnap, &pe32)) {
+    if (!Process32FirstW(hProcessSnap, &pe32)) {
         CloseHandle(hProcessSnap);  // clean the snapshot object
         return "Unknown process";
     }
@@ -63,7 +64,7 @@ std::string_view get_process_list() {
                 return name;
             }
         }
-    } while (Process32Next(hProcessSnap, &pe32));
+    } while (Process32NextW(hProcessSnap, &pe32));
 
     CloseHandle(hProcessSnap);
 
@@ -115,53 +116,44 @@ class Logger {
     Logger() {
         /* clang-format off */
         this->j = {
-            {"name", ""},
-            {"numOfTouch", {
-                {"w_button", 0},
-                {"a_button", 0},
-                {"s_button", 0},
-                {"d_button", 0},
-                {"q_button", 0},
-                {"e_button", 0},
-                {"shift_button", 0},
-                {"ctrl_button", 0},
-                {"space_button", 0},
-                {"left_button", 0},
-                {"right_button", 0},
-                {"middle_button", 0},
-                {"x1_button", 0},
-                {"x2_button", 0}
-        }}};
+            {"name", get_process_list()},
+            {"timestamp", 0},
+            {"keys", nlohmann::json::array()}};
         /* clang-format on */
+
 #ifdef _WIN32
-        char tmp_path[100]{};
-        GetTempPathA(85, tmp_path);
-        this->path = tmp_path;
+        char buf[100]{};
+        GetTempPathA(85, buf);
+        const std::string file = std::string(buf) + "db.json";
 #else
-        this->path = "/tmp/";
+        static constexpr std::string_view path = "/tmp/db.json";
 #endif
+
+        this->log_output.open(file.data(), std::ofstream::app);
+    }
+
+    ~Logger() = default;
+
+    inline auto write() -> void {
+      if (!this->j["keys"].empty()) {
         this->j.at("name") = get_process_list();
-#ifndef _NDEBUG
-        this->write();
-#endif
+      this->j.at("timestamp") = std::chrono::system_clock::to_time_t(
+          std::chrono::system_clock::now());
+      this->log_output << this->j << '\n';
+      this->j["keys"].clear();
+    }
     }
 
-    ~Logger() {
-        this->write();
+    inline auto add_key(const std::string_view value) -> void {
+        this->j["keys"].push_back(value);
     }
 
-    void write() {
-        const std::string file = std::string(path) + "db.json";
-        std::ofstream out(file, std::ios_base::app);
-        out << this->j << '\n';
-    }
-
-    auto get(const char* path) -> nlohmann::json& {
-        return this->j[path];
+    inline auto close() -> void {
+        this->log_output.close();
     }
 
  private:
-    std::string_view path;
+    std::ofstream log_output{};
     nlohmann::json j;
 };
 }  // namespace vnepogodin

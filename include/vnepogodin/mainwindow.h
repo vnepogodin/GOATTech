@@ -24,9 +24,6 @@
 #include <vnepogodin/overlay_mouse.h>
 
 #include <memory>
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <QMainWindow>
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -41,17 +38,8 @@
 QT_BEGIN_NAMESPACE
 class Ui_MainWindow {
  public:
-    QWidget* centralwidget;
-    QHBoxLayout* horizontalLayout;
-    QWidget* widget;
-    QVBoxLayout* verticalLayout;
-    QSpacerItem* verticalSpacer;
     vnepogodin::Overlay* keyboard;
-    vnepogodin::Logger* log;
     vnepogodin::Overlay_mouse* mouse;
-    QSpacerItem* horizontalSpacer;
-    QMenuBar* menubar;
-    QStatusBar* statusbar;
 
     void setupUi(QMainWindow* MainWindow) {
         if (MainWindow->objectName().isEmpty())
@@ -68,10 +56,8 @@ class Ui_MainWindow {
         verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         verticalLayout->addItem(verticalSpacer);
-
-        log      = new vnepogodin::Logger();
-        keyboard = new vnepogodin::Overlay(widget, log);
-        mouse    = new vnepogodin::Overlay_mouse(widget, log);
+        keyboard = new vnepogodin::Overlay(widget);
+        mouse    = new vnepogodin::Overlay_mouse(widget);
         keyboard->setObjectName(QString::fromUtf8("keyboard"));
         mouse->setObjectName(QString::fromUtf8("mouse"));
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -124,11 +110,21 @@ class Ui_MainWindow {
         delete verticalSpacer;
         delete keyboard;
         delete mouse;
-        //delete log;
         delete horizontalSpacer;
         delete menubar;
         delete statusbar;
     }
+
+ private:
+    QWidget* centralwidget;
+    QHBoxLayout* horizontalLayout;
+    QWidget* widget;
+    QVBoxLayout* verticalLayout;
+    QSpacerItem* verticalSpacer;
+
+    QSpacerItem* horizontalSpacer;
+    QMenuBar* menubar;
+    QStatusBar* statusbar;
 };
 
 namespace Ui {
@@ -142,22 +138,18 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
  public:
-    MainWindow(QWidget* parent = nullptr) : QMainWindow(parent) {
-        ui.get()->setupUi(this);
+    explicit MainWindow(QWidget* parent = nullptr);
+    virtual ~MainWindow();
 
-        setAttribute(Qt::WA_TranslucentBackground);
-        setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint);  // | Qt::SplashScreen);
-#ifdef _WIN32
-        SetForegroundWindow((HWND)winId());
-        SetWindowPos((HWND)winId(), HWND_TOPMOST, 0, 0, 0, 0,
-            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-#endif
-        const int& size = qMin(this->size().height(), this->size().width()) - 300;
-        ui.get()->keyboard->setFixedSize(size, size);
-        //ui.get()->mouse->setFixedSize(size - 150, size - 150);
-    }
+ protected:
+    // The method for processing native events from the OS in Qt
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 
  private:
+#ifdef _WIN32
+    static constexpr auto IDT_TIMER = 1001;
+    HWND hwnd = nullptr;
+#endif
     std::unique_ptr<Ui::MainWindow> ui = std::make_unique<Ui::MainWindow>();
 };
 }  // namespace vnepogodin

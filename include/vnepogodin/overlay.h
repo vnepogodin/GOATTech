@@ -33,7 +33,7 @@ class Overlay : public QWidget {
     Q_OBJECT
 
  public:
-    explicit Overlay(QWidget* parent = nullptr, Logger* log = nullptr);
+    explicit Overlay(QWidget* parent = nullptr);
     virtual ~Overlay();
 
  protected:
@@ -51,7 +51,6 @@ class Overlay : public QWidget {
     const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
     std::thread poll;
 
-    Logger *logger;
     std::unique_ptr<Ui::Overlay> ui = std::make_unique<Ui::Overlay>();
 
     /**

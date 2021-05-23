@@ -34,7 +34,7 @@ class Overlay_mouse : public QWidget {
     Q_OBJECT
 
  public:
-    explicit Overlay_mouse(QWidget* parent = nullptr, Logger* log = nullptr);
+    explicit Overlay_mouse(QWidget* parent = nullptr);
     virtual ~Overlay_mouse();
 
  protected:
@@ -52,7 +52,6 @@ class Overlay_mouse : public QWidget {
     const int refresh_rate = 500;  // Frequency of mouse input checking in hertz
     std::thread poll;
 
-    Logger* logger;
     std::unique_ptr<Ui::Overlay_mouse> ui = std::make_unique<Ui::Overlay_mouse>();
 
     /**
