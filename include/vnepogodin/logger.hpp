@@ -21,7 +21,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <tlhelp32.h> // PROCESSENTRY32W, CreateToolhelp32Snapshot, Process32FirstW, Process32NextW
+#include <tlhelp32.h>  // PROCESSENTRY32W, CreateToolhelp32Snapshot, Process32FirstW, Process32NextW
 #else
 #include <cstring>
 #include <dirent.h>
@@ -135,13 +135,13 @@ class Logger {
     ~Logger() = default;
 
     inline auto write() -> void {
-      if (!this->j["keys"].empty()) {
-        this->j.at("name") = get_process_list();
-      this->j.at("timestamp") = std::chrono::system_clock::to_time_t(
-          std::chrono::system_clock::now());
-      this->log_output << this->j << '\n';
-      this->j["keys"].clear();
-    }
+        if (!this->j["keys"].empty()) {
+            this->j.at("name")      = get_process_list();
+            this->j.at("timestamp") = std::chrono::system_clock::to_time_t(
+                std::chrono::system_clock::now());
+            this->log_output << this->j << '\n';
+            this->j["keys"].clear();
+        }
     }
 
     inline auto add_key(const std::string_view value) -> void {

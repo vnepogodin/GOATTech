@@ -1,6 +1,6 @@
-#include <vnepogodin/utils.hpp>
-#include <vnepogodin/overlay_gamepad.h>
 #include <ui_overlay_gamepad.h>
+#include <vnepogodin/overlay_gamepad.h>
+#include <vnepogodin/utils.hpp>
 
 static constexpr auto MAX_PLAYERS = 12;
 

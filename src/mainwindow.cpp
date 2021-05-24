@@ -74,43 +74,42 @@ static inline void SetHook() {
     }
 }
 
-MainWindow::MainWindow(QWidget *parent)
-  : QMainWindow(parent)
-{
-  ui->setupUi(this);
+MainWindow::MainWindow(QWidget* parent)
+  : QMainWindow(parent) {
+    ui->setupUi(this);
 
-  setAttribute(Qt::WA_TranslucentBackground);
-  setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint);  // | Qt::SplashScreen);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint);  // | Qt::SplashScreen);
 #ifdef _WIN32
-  this->hwnd = (HWND)winId();
-  SetForegroundWindow(hwnd);
-  SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-      SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    this->hwnd = (HWND)winId();
+    SetForegroundWindow(hwnd);
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-  SetTimer(hwnd,      // handle to main window
-           IDT_TIMER, // timer identifier
-           100,       // 100ms interval
-           (TIMERPROC)NULL);
+    SetTimer(hwnd,  // handle to main window
+        IDT_TIMER,  // timer identifier
+        100,        // 100ms interval
+        (TIMERPROC)NULL);
 
-  SetHook();
+    SetHook();
 #endif
-  const int& size = qMin(this->size().height(), this->size().width()) - 300;
-  ui.get()->keyboard->setFixedSize(size, size);
-  ui.get()->mouse->setFixedSize(size - 150, size - 150);
+    const int& size = qMin(this->size().height(), this->size().width()) - 300;
+    ui.get()->keyboard->setFixedSize(size, size);
+    ui.get()->mouse->setFixedSize(size - 150, size - 150);
 
-  //ui.get()->keyboard->hide();
-  ui.get()->mouse->hide();
+    //ui.get()->keyboard->hide();
+    ui.get()->mouse->hide();
 }
 
 MainWindow::~MainWindow() {
-  UnhookWindowsHookEx(_hook_keyboard);
-  UnhookWindowsHookEx(_hook_mouse);
-  KillTimer(hwnd, IDT_TIMER);
-  logger.close();
-  DestroyWindow(hwnd);
+    UnhookWindowsHookEx(_hook_keyboard);
+    UnhookWindowsHookEx(_hook_mouse);
+    KillTimer(hwnd, IDT_TIMER);
+    logger.close();
+    DestroyWindow(hwnd);
 }
 
-bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, long *result) {
+bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* result) {
     Q_UNUSED(eventType)
     Q_UNUSED(result)
     // Transform the message pointer to the MSG WinAPI
@@ -119,7 +118,7 @@ bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, long *r
     switch (msg->message) {
     case WM_TIMER:
         logger.write();
-      break;
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;

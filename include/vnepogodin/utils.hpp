@@ -67,14 +67,14 @@ namespace utils {
     }
 
     inline std::uint32_t get_key() {
-      for (const auto& code : code_list) {
+        for (const auto& code : code_list) {
 #ifdef _WIN32
-          if (GetAsyncKeyState(code.first)) {
-              return code.first;
-          }
+            if (GetAsyncKeyState(code.first)) {
+                return code.first;
+            }
 #endif
-      }
-      return key_code::UNDEFINED;
+        }
+        return key_code::UNDEFINED;
     }
 };  // namespace utils
 }  // namespace vnepogodin
