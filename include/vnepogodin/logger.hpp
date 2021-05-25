@@ -126,7 +126,7 @@ class Logger {
         GetTempPathA(85, buf);
         const std::string file = std::string(buf) + "db.json";
 #else
-        static constexpr std::string_view path = "/tmp/db.json";
+        static constexpr std::string_view file = "/tmp/db.json";
 #endif
 
         this->log_output.open(file.data(), std::ofstream::app);

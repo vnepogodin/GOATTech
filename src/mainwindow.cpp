@@ -3,14 +3,9 @@
 #include <vnepogodin/logger.hpp>
 #include <vnepogodin/utils.hpp>
 
-using namespace vnepogodin;
-
-// variable to store the HANDLE to the hook. Don't declare it anywhere else then globally
-// or you will get problems since every function uses this variable.
-static HHOOK _hook_keyboard;
-static HHOOK _hook_mouse;
 static vnepogodin::Logger logger;
 
+using namespace vnepogodin;
 static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
     for (const auto& code : utils::code_list) {
         if (code.first == key_stroke) {
@@ -21,6 +16,13 @@ static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
 
     return utils::key_code::UNDEFINED;
 }
+
+#ifdef _WIN32
+
+// variable to store the HANDLE to the hook. Don't declare it anywhere else then globally
+// or you will get problems since every function uses this variable.
+static HHOOK _hook_keyboard;
+static HHOOK _hook_mouse;
 
 // This is the callback function. Consider it the event that is raised when, in this case,
 // a key is pressed.
@@ -74,33 +76,6 @@ static inline void SetHook() {
     }
 }
 
-MainWindow::MainWindow(QWidget* parent)
-  : QMainWindow(parent) {
-    ui->setupUi(this);
-
-    setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint);  // | Qt::SplashScreen);
-#ifdef _WIN32
-    this->hwnd = (HWND)winId();
-    SetForegroundWindow(hwnd);
-    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-
-    SetTimer(hwnd,  // handle to main window
-        IDT_TIMER,  // timer identifier
-        100,        // 100ms interval
-        (TIMERPROC)NULL);
-
-    SetHook();
-#endif
-    const int& size = qMin(this->size().height(), this->size().width()) - 300;
-    ui.get()->keyboard->setFixedSize(size, size);
-    ui.get()->mouse->setFixedSize(size - 150, size - 150);
-
-    //ui.get()->keyboard->hide();
-    ui.get()->mouse->hide();
-}
-
 MainWindow::~MainWindow() {
     UnhookWindowsHookEx(_hook_keyboard);
     UnhookWindowsHookEx(_hook_mouse);
@@ -127,4 +102,70 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
     }
 
     return false;
+}
+
+#else
+
+#include <QKeyEvent>
+#include <QMouseEvent>
+/* Qt just uses the QWidget* parent as transient parent for native
+ * platform dialogs. This makes it impossible to make them transient
+ * to a bare QWindow*. So we catch the show event for the QDialog
+ * and setTransientParent here instead. */
+bool MainWindow::event(QEvent* ev) {
+    if (ev->type() == QEvent::Timer) {
+        logger.write();
+        return true;
+    } else if (ev->type() == QEvent::KeyPress) {
+        handle_key(static_cast<QKeyEvent*>(ev)->key());
+        return true;
+    } else if (ev->type() == QEvent::MouseButtonPress) {
+        const std::uint32_t button = static_cast<QMouseEvent*>(ev)->button();
+        switch (button) {
+        case XButton1:
+            handle_key(vnepogodin::utils::key_code::X1BUTTON);
+            break;
+        case XButton2:
+            handle_key(vnepogodin::utils::key_code::X2BUTTON);
+            break;
+        default:
+            handle_key(button);
+            break;
+        }
+        return true;
+    }
+
+    return QObject::event(ev);
+}
+
+#endif
+
+MainWindow::MainWindow(QWidget* parent)
+  : QMainWindow(parent) {
+    ui->setupUi(this);
+
+    setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint);  // | Qt::SplashScreen);
+#ifdef _WIN32
+    this->hwnd = (HWND)winId();
+    SetForegroundWindow(hwnd);
+    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+    SetTimer(hwnd,  // handle to main window
+        IDT_TIMER,  // timer identifier
+        100,        // 100ms interval
+        (TIMERPROC)NULL);
+
+    SetHook();
+#else
+    startTimer(100);
+    setMouseTracking(true);
+#endif
+    const int& size = qMin(this->size().height(), this->size().width()) - 300;
+    ui.get()->keyboard->setFixedSize(size, size);
+    ui.get()->mouse->setFixedSize(size - 150, size - 150);
+
+    //ui.get()->keyboard->hide();
+    ui.get()->mouse->hide();
 }

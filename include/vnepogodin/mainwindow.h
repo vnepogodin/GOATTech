@@ -23,7 +23,6 @@
 #include <vnepogodin/overlay.h>
 #include <vnepogodin/overlay_mouse.h>
 
-#include <memory>
 #include <QMainWindow>
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -34,6 +33,7 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 class Ui_MainWindow {
@@ -99,21 +99,10 @@ class Ui_MainWindow {
     }  // setupUi
 
     void retranslateUi(QMainWindow* MainWindow) {
-        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        MainWindow->setWindowTitle("MainWindow");
     }  // retranslateUi
 
-    ~Ui_MainWindow() {
-        delete centralwidget;
-        delete horizontalLayout;
-        delete widget;
-        delete verticalLayout;
-        delete verticalSpacer;
-        delete keyboard;
-        delete mouse;
-        delete horizontalSpacer;
-        delete menubar;
-        delete statusbar;
-    }
+    virtual ~Ui_MainWindow() = default;
 
  private:
     QWidget* centralwidget;
@@ -139,16 +128,24 @@ class MainWindow : public QMainWindow {
 
  public:
     explicit MainWindow(QWidget* parent = nullptr);
+
+#ifdef _WIN32
     virtual ~MainWindow();
 
  protected:
     // The method for processing native events from the OS in Qt
-    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+    virtual bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
+#else
+    virtual ~MainWindow() = default;
+
+ protected:
+    virtual bool event(QEvent* ev) override;
+#endif
 
  private:
 #ifdef _WIN32
     static constexpr auto IDT_TIMER = 1001;
-    HWND hwnd = nullptr;
+    HWND hwnd                       = nullptr;
 #endif
     std::unique_ptr<Ui::MainWindow> ui = std::make_unique<Ui::MainWindow>();
 };

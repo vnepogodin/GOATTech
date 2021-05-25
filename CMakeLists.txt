@@ -55,10 +55,8 @@ else()
 endif()
 
 if(WIN32)
-    SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /LTCG:INCREMENTAL")
-#    find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
-#else()
-#    SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -lhid -lhidapi-hidraw -lhidapi-libusb")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /LTCG:INCREMENTAL")
+#   find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
 endif()
 
 #add_subdirectory(thirdparty/JoyShockLibrary)
@@ -71,7 +69,7 @@ set_project_warnings(project_warnings)
 ##
 ## Target
 ##
-SET(GUI_TYPE WIN32)
+set(GUI_TYPE WIN32)
 add_executable(${PROJECT_NAME} ${GUI_TYPE}
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/logger.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/utils.hpp
