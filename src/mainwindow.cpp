@@ -122,10 +122,10 @@ bool MainWindow::event(QEvent* ev) {
     } else if (ev->type() == QEvent::MouseButtonPress) {
         const std::uint32_t button = static_cast<QMouseEvent*>(ev)->button();
         switch (button) {
-        case XButton1:
+        case Qt::XButton1:
             handle_key(vnepogodin::utils::key_code::X1BUTTON);
             break;
-        case XButton2:
+        case Qt::XButton2:
             handle_key(vnepogodin::utils::key_code::X2BUTTON);
             break;
         default:
@@ -145,6 +145,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this);
 
     setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint);  // | Qt::SplashScreen);
 #ifdef _WIN32
     this->hwnd = (HWND)winId();

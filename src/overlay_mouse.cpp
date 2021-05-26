@@ -20,6 +20,8 @@ using namespace vnepogodin;
 
 Overlay_mouse::Overlay_mouse(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
+
+    setAttribute(Qt::WA_NativeWindow);
     connectMouse();
 }
 

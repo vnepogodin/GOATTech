@@ -21,6 +21,7 @@ auto main(int argc, char** argv) -> std::int32_t {
     flock(fd, LOCK_EX);
 #endif
 
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
     vnepogodin::MainWindow w;
     w.showFullScreen();

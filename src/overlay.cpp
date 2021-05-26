@@ -19,6 +19,8 @@ using namespace vnepogodin;
 
 Overlay::Overlay(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
+
+    setAttribute(Qt::WA_NativeWindow);
     connectKeyboard();
 }
 
