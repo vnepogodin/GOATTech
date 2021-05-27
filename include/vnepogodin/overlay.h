@@ -31,7 +31,6 @@ class Overlay;
 namespace vnepogodin {
 class Overlay : public QWidget {
     Q_OBJECT
-
  public:
     explicit Overlay(QWidget* parent = nullptr);
     virtual ~Overlay();

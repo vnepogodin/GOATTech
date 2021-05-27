@@ -125,7 +125,6 @@ QT_END_NAMESPACE
 namespace vnepogodin {
 class MainWindow : public QMainWindow {
     Q_OBJECT
-
  public:
     explicit MainWindow(QWidget* parent = nullptr);
 
@@ -145,9 +144,11 @@ class MainWindow : public QMainWindow {
  private:
 #ifdef _WIN32
     static constexpr auto IDT_TIMER = 1001;
-    HWND hwnd                       = nullptr;
+    static constexpr auto IDT_TRAY  = WM_APP;
+    HWND m_hwnd                       = nullptr;
+    bool m_activated = false;
 #endif
-    std::unique_ptr<Ui::MainWindow> ui = std::make_unique<Ui::MainWindow>();
+    std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
 };
 }  // namespace vnepogodin
 

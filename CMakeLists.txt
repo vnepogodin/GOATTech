@@ -30,7 +30,9 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+if(CMAKE_VERSION VERSION_LESS "3.7.0")
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+endif()
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -71,15 +73,15 @@ set_project_warnings(project_warnings)
 ##
 set(GUI_TYPE WIN32)
 add_executable(${PROJECT_NAME} ${GUI_TYPE}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/logger.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/utils.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/thirdparty/json.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/overlay.h ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/overlay_mouse.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/vnepogodin/mainwindow.h ${CMAKE_CURRENT_SOURCE_DIR}/src/mainwindow.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/overlay.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/overlay_mouse.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/forms/overlay.ui ${CMAKE_CURRENT_SOURCE_DIR}/forms/overlay_mouse.ui
+    include/vnepogodin/logger.hpp
+    include/vnepogodin/utils.hpp
+    include/vnepogodin/thirdparty/json.hpp
+    include/vnepogodin/overlay.h src/overlay.cpp
+    include/vnepogodin/overlay_mouse.h src/overlay_mouse.cpp
+    include/vnepogodin/mainwindow.h src/mainwindow.cpp
+    forms/overlay.ui forms/overlay_mouse.ui
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp ${CMAKE_CURRENT_SOURCE_DIR}/overlay.qrc
+    src/main.cpp overlay.qrc
     )
 
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})

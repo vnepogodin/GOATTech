@@ -23,6 +23,9 @@ static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
 // or you will get problems since every function uses this variable.
 static HHOOK _hook_keyboard;
 static HHOOK _hook_mouse;
+static NOTIFYICONDATAW nid;
+static constexpr auto ID_SETTINGS = 2000;
+static constexpr auto ID_EXIT     = 2001;
 
 // This is the callback function. Consider it the event that is raised when, in this case,
 // a key is pressed.
@@ -79,9 +82,34 @@ static inline void SetHook() {
 MainWindow::~MainWindow() {
     UnhookWindowsHookEx(_hook_keyboard);
     UnhookWindowsHookEx(_hook_mouse);
-    KillTimer(hwnd, IDT_TIMER);
+    KillTimer(m_hwnd, IDT_TIMER);
+    Shell_NotifyIconW(NIM_DELETE, &nid);
     logger.close();
-    DestroyWindow(hwnd);
+}
+
+static void ShowPopupMenu(HWND hWnd, POINT* curpos, int wDefaultItem) {
+    HMENU hPop = CreatePopupMenu();
+
+    InsertMenuW(hPop, 0, MF_BYPOSITION | MF_STRING, ID_SETTINGS, L"Settings");
+    InsertMenuW(hPop, 1, MF_BYPOSITION | MF_STRING, ID_EXIT, L"Exit");
+
+    SetMenuDefaultItem(hPop, ID_SETTINGS, FALSE);
+    SetFocus(hWnd);
+    SendMessageW(hWnd, WM_INITMENUPOPUP, (WPARAM)hPop, 0);
+
+    POINT pt;
+    if (!curpos) {
+        GetCursorPos(&pt);
+
+        curpos = &pt;
+    }
+
+    WORD cmd = TrackPopupMenu(
+        hPop, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY,
+        curpos->x, curpos->y, 0, hWnd, NULL);
+
+    SendMessageW(hWnd, WM_COMMAND, cmd, 0);
+    DestroyMenu(hPop);
 }
 
 bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* result) {
@@ -94,11 +122,39 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
     case WM_TIMER:
         logger.write();
         break;
+    case WM_COMMAND:
+        switch (LOWORD(msg->wParam)) {
+        case ID_SETTINGS:
+            
+            break;
+
+        case ID_EXIT:
+            PostMessage(m_hwnd, WM_CLOSE, 0, 0);
+            break;
+        }
+        break;
+    case IDT_TRAY:
+        switch (msg->lParam) {
+        case WM_LBUTTONUP:
+            //m_ui->mouse->setVisible(m_activated);
+            m_ui->keyboard->setVisible(m_activated);
+            m_activated = !m_activated;
+            break;
+        case WM_RBUTTONUP:
+            SetForegroundWindow(m_hwnd);
+            ShowPopupMenu(m_hwnd, NULL, -1);
+            PostMessageW(m_hwnd, IDT_TRAY + 1, 0, 0);
+            break;
+        }
+        break;
+    case WM_CLOSE:
+        DestroyWindow(m_hwnd);
+        break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
     default:
-        return DefWindowProc(hwnd, msg->message, msg->wParam, msg->lParam);
+        return DefWindowProc(m_hwnd, msg->message, msg->wParam, msg->lParam);
     }
 
     return false;
@@ -142,31 +198,45 @@ bool MainWindow::event(QEvent* ev) {
 
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent) {
-    ui->setupUi(this);
+    m_ui->setupUi(this);
 
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NativeWindow);
-    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint);  // | Qt::SplashScreen);
+    setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
 #ifdef _WIN32
-    this->hwnd = (HWND)winId();
-    SetForegroundWindow(hwnd);
-    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+    m_hwnd = (HWND)winId();
+    SetForegroundWindow(m_hwnd);
+    SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-    SetTimer(hwnd,  // handle to main window
+    SetTimer(m_hwnd,  // handle to main window
         IDT_TIMER,  // timer identifier
         100,        // 100ms interval
         (TIMERPROC)NULL);
 
     SetHook();
+
+    nid.hWnd = m_hwnd;
+
+    nid.uID = 1;
+
+    nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+
+    nid.uCallbackMessage = IDT_TRAY;
+
+    ExtractIconExW(L"icon.ico", 0, NULL, &(nid.hIcon), 1);
+
+    wcscpy_s(nid.szTip, L"Tool Tip");
+
+    Shell_NotifyIconW(NIM_ADD, &nid);
 #else
     startTimer(100);
     setMouseTracking(true);
 #endif
     const int& size = qMin(this->size().height(), this->size().width()) - 300;
-    ui.get()->keyboard->setFixedSize(size, size);
-    ui.get()->mouse->setFixedSize(size - 150, size - 150);
+    m_ui->keyboard->setFixedSize(size, size);
+    m_ui->mouse->setFixedSize(size - 150, size - 150);
 
-    //ui.get()->keyboard->hide();
-    ui.get()->mouse->hide();
+    //m_ui->keyboard->hide();
+    m_ui->mouse->hide();
 }

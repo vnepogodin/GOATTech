@@ -32,7 +32,6 @@ class Overlay_mouse;
 namespace vnepogodin {
 class Overlay_mouse : public QWidget {
     Q_OBJECT
-
  public:
     explicit Overlay_mouse(QWidget* parent = nullptr);
     virtual ~Overlay_mouse();
