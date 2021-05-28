@@ -125,7 +125,7 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
     case WM_COMMAND:
         switch (LOWORD(msg->wParam)) {
         case ID_SETTINGS:
-            
+
             break;
 
         case ID_EXIT:
@@ -210,8 +210,8 @@ MainWindow::MainWindow(QWidget* parent)
         SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
     SetTimer(m_hwnd,  // handle to main window
-        IDT_TIMER,  // timer identifier
-        100,        // 100ms interval
+        IDT_TIMER,    // timer identifier
+        100,          // 100ms interval
         (TIMERPROC)NULL);
 
     SetHook();
