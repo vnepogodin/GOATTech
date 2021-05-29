@@ -33,6 +33,8 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include <QSharedMemory>
+#include <QProcess>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -125,6 +127,7 @@ QT_END_NAMESPACE
 namespace vnepogodin {
 class MainWindow : public QMainWindow {
     Q_OBJECT
+    Q_DISABLE_COPY(MainWindow)
  public:
     explicit MainWindow(QWidget* parent = nullptr);
 
@@ -148,7 +151,11 @@ class MainWindow : public QMainWindow {
     HWND m_hwnd                       = nullptr;
     bool m_activated = false;
 #endif
+    std::unique_ptr<QProcess> m_process;
+    std::unique_ptr<QSharedMemory> m_sharedMemory;
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
+
+    void loadFromMemory();
 };
 }  // namespace vnepogodin
 

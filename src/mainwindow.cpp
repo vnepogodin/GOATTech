@@ -1,7 +1,27 @@
+// Copyright (C) 2021 Vladislav Nepogodin
+//
+// This file is part of SportTech overlay project.
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 #include <vnepogodin/mainwindow.h>
 
 #include <vnepogodin/logger.hpp>
 #include <vnepogodin/utils.hpp>
+
+#include <QBuffer>
 
 static vnepogodin::Logger logger;
 
@@ -84,6 +104,8 @@ MainWindow::~MainWindow() {
     UnhookWindowsHookEx(_hook_mouse);
     KillTimer(m_hwnd, IDT_TIMER);
     Shell_NotifyIconW(NIM_DELETE, &nid);
+    if (!m_process->waitForFinished())
+        m_process->kill();
     logger.close();
 }
 
@@ -120,12 +142,15 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
 
     switch (msg->message) {
     case WM_TIMER:
+        loadFromMemory();
         logger.write();
         break;
     case WM_COMMAND:
         switch (LOWORD(msg->wParam)) {
         case ID_SETTINGS:
-
+            if (m_process->state() == QProcess::NotRunning) {
+                m_process->open();
+            }
             break;
 
         case ID_EXIT:
@@ -170,6 +195,7 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
  * and setTransientParent here instead. */
 bool MainWindow::event(QEvent* ev) {
     if (ev->type() == QEvent::Timer) {
+        loadFromMemory();
         logger.write();
         return true;
     } else if (ev->type() == QEvent::KeyPress) {
@@ -197,13 +223,16 @@ bool MainWindow::event(QEvent* ev) {
 #endif
 
 MainWindow::MainWindow(QWidget* parent)
-  : QMainWindow(parent) {
+  : QMainWindow(parent),
+    m_sharedMemory(new QSharedMemory("SportTechSharedMemory", this)) {
     m_ui->setupUi(this);
+    m_process = std::make_unique<QProcess>(this);
 
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
 #ifdef _WIN32
+    m_process->setProgram("SportTech-settings.exe");
     m_hwnd = (HWND)winId();
     SetForegroundWindow(m_hwnd);
     SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
@@ -230,6 +259,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     Shell_NotifyIconW(NIM_ADD, &nid);
 #else
+    m_process->setProgram("SportTech-settings");
     startTimer(100);
     setMouseTracking(true);
 #endif
@@ -239,4 +269,26 @@ MainWindow::MainWindow(QWidget* parent)
 
     //m_ui->keyboard->hide();
     m_ui->mouse->hide();
+}
+
+void MainWindow::loadFromMemory() {
+    if (m_process->state() == QProcess::Running) {
+        if (!m_sharedMemory->attach()) {
+            return;
+        }
+
+        QBuffer buffer;
+        QDataStream in(&buffer);
+
+        m_sharedMemory->lock();
+        buffer.setData((char*)m_sharedMemory->constData(), m_sharedMemory->size());
+        buffer.open(QBuffer::ReadOnly);
+
+        QString temp;
+        in >> temp;
+        //const nlohmann::json& json = nlohmann::json::parse(temp.toStdString());
+        m_sharedMemory->unlock();
+
+        m_sharedMemory->detach();
+    }
 }

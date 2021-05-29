@@ -4,14 +4,8 @@ cmake_minimum_required(VERSION 3.12)
 ## PROJECT
 ## name and version
 ##
-project(overlay
+project(SportTech-settings
         VERSION 0.6.0)
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
-endif()
-message(STATUS "BUILD: ${CMAKE_BUILD_TYPE}")
-
 
 ##
 ## INCLUDE
@@ -19,7 +13,7 @@ message(STATUS "BUILD: ${CMAKE_BUILD_TYPE}")
 include(FindThreads)
 
 find_package(Threads REQUIRED)
-find_package(Qt5 COMPONENTS Widgets Svg REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 ##
 ## CONFIGURATION
@@ -33,7 +27,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
-set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
@@ -58,36 +51,22 @@ endif()
 
 if(WIN32)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /LTCG:INCREMENTAL")
-#   find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
 endif()
 
-#add_subdirectory(thirdparty/JoyShockLibrary)
-
-add_library(project_warnings INTERFACE)
-
-include(cmake/CompilerWarnings.cmake)
-set_project_warnings(project_warnings)
-
-add_subdirectory(modules/settings)
 
 ##
 ## Target
 ##
 set(GUI_TYPE WIN32)
 add_executable(${PROJECT_NAME} ${GUI_TYPE}
-    include/vnepogodin/logger.hpp
-    include/vnepogodin/utils.hpp
-    include/vnepogodin/thirdparty/json.hpp
-    include/vnepogodin/overlay.h src/overlay.cpp
-    include/vnepogodin/overlay_mouse.h src/overlay_mouse.cpp
-    include/vnepogodin/mainwindow.h src/mainwindow.cpp
-    forms/overlay.ui forms/overlay_mouse.ui
+    src/settings.hpp src/settings.cpp
+    src/settings.ui
 
-    src/main.cpp overlay.qrc
+    src/main.cpp settings.qrc
     )
 
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg ${HIDAPI_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${Qt5Widgets_INCLUDES})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Widgets_INCLUDES})

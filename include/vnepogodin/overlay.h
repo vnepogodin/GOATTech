@@ -31,6 +31,7 @@ class Overlay;
 namespace vnepogodin {
 class Overlay : public QWidget {
     Q_OBJECT
+    Q_DISABLE_COPY(Overlay)
  public:
     explicit Overlay(QWidget* parent = nullptr);
     virtual ~Overlay();
