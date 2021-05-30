@@ -18,8 +18,6 @@
 
 #include "settings.hpp"
 
-#include <QBuffer>
-
 using namespace vnepogodin;
 
 namespace vnepogodin {
