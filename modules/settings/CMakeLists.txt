@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.12)
 ## name and version
 ##
 project(SportTech-settings
-        VERSION 0.6.0)
+        VERSION 0.8.5)
 
 ##
 ## INCLUDE

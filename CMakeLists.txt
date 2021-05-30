@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.12)
 ## name and version
 ##
 project(overlay
-        VERSION 0.6.0)
+        VERSION 0.8.5)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -20,6 +20,11 @@ include(FindThreads)
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Svg REQUIRED)
+
+##
+## OPTIONS
+##
+#option(ENABLE_SETTINGS "Enable SportTech Settings" ON)
 
 ##
 ## CONFIGURATION
@@ -68,8 +73,10 @@ add_library(project_warnings INTERFACE)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
+#if(ENABLE_SETTINGS)
 add_subdirectory(modules/settings)
-add_subdirectory(modules/webui)
+#endif()
+#add_subdirectory(modules/webui)
 
 ##
 ## Target

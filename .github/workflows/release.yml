@@ -6,20 +6,8 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.SECRET_CI }}
-  CARGO_TERM_COLOR: always
 
 jobs:
-  macos:
-    runs-on: macos-latest
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --release
-      - name: Upload executable
-        run: |
-          cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-macos
-          ./.github/workflows/upload_asset.sh ./SportTech-overlay-${GITHUB_REF##*/}-macos $GITHUB_TOKEN
   windows:
     runs-on: windows-latest
 
@@ -29,21 +17,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --release
-      - name: Upload executable
-        run: |
-          cp ./target/release/sport_tech_overlay.exe ./SportTech-overlay-${GITHUB_REF##*/}.exe
-          ./.github/workflows/upload_asset.sh \
-          ./SportTech-overlay-${GITHUB_REF##*/}.exe $GITHUB_TOKEN
-  linux:
-    runs-on: ubuntu-latest
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
 
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --release
+      - name: Configure CMake
+        run: cmake -S . -B build -G "Visual Studio 16 2019 Win64" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      - name: Build CPP
+        run: cmake --build build --config $BUILD_TYPE --parallel 10
       - name: Upload executable
         run: |
-          cp ./target/release/sport_tech_overlay ./SportTech-overlay-${GITHUB_REF##*/}-linux
-          ./.github/workflows/upload_asset.sh ./SportTech-overlay-${GITHUB_REF##*/}-linux $GITHUB_TOKEN
+          cp ./build/overlay.exe ./SportTech.exe
+          ./.github/workflows/upload_asset.sh \
+          ./SportTech.exe $GITHUB_TOKEN
