@@ -39,6 +39,11 @@ auto main(int argc, char** argv) -> std::int32_t {
     flock(fd, LOCK_EX);
 #endif
 
+    // Set application info
+    QCoreApplication::setOrganizationName("torrenttor");
+    QCoreApplication::setApplicationName("SportTech");
+
+    // Set application attributes
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     QApplication a(argc, argv);

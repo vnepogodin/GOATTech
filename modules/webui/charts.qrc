@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/index.html</file>
+
+        <file>res/thirdparty/chart.js</file>
+        <file>res/thirdparty/qwebchannel.js</file>
+        <file>res/app.js</file>
+        <file>res/index.js</file>
+        <file>res/style.css</file>
+    </qresource>
+</RCC>

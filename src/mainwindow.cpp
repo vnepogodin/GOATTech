@@ -21,7 +21,7 @@
 #include <vnepogodin/logger.hpp>
 #include <vnepogodin/utils.hpp>
 
-#include <QBuffer>
+#include <QSettings>
 
 static vnepogodin::Logger logger;
 
@@ -37,12 +37,13 @@ static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
     return utils::key_code::UNDEFINED;
 }
 
-#ifdef _WIN32
+#ifdef Q_OS_WIN
 
 // variable to store the HANDLE to the hook. Don't declare it anywhere else then globally
 // or you will get problems since every function uses this variable.
-static HHOOK _hook_keyboard;
-static HHOOK _hook_mouse;
+static HHOOK _hook_keyboard = nullptr;
+static HHOOK _hook_mouse    = nullptr;
+static HANDLE pipe          = nullptr;
 static NOTIFYICONDATAW nid;
 static constexpr auto ID_SETTINGS = 2000;
 static constexpr auto ID_EXIT     = 2001;
@@ -104,8 +105,13 @@ MainWindow::~MainWindow() {
     UnhookWindowsHookEx(_hook_mouse);
     KillTimer(m_hwnd, IDT_TIMER);
     Shell_NotifyIconW(NIM_DELETE, &nid);
-    if (!m_process->waitForFinished())
-        m_process->kill();
+    if (!m_process_settings->waitForFinished())
+        m_process_settings->kill();
+    if (!m_process_charts->waitForFinished())
+        m_process_charts->kill();
+
+    // Close the pipe (automatically disconnects client too)
+    CloseHandle(pipe);
     logger.close();
 }
 
@@ -134,6 +140,7 @@ static void ShowPopupMenu(HWND hWnd, POINT* curpos, int wDefaultItem) {
     DestroyMenu(hPop);
 }
 
+#include <iostream>
 bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* result) {
     Q_UNUSED(eventType)
     Q_UNUSED(result)
@@ -142,14 +149,13 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
 
     switch (msg->message) {
     case WM_TIMER:
-        loadFromMemory();
         logger.write();
         break;
     case WM_COMMAND:
         switch (LOWORD(msg->wParam)) {
         case ID_SETTINGS:
-            if (m_process->state() == QProcess::NotRunning) {
-                m_process->open();
+            if (m_process_settings->state() == QProcess::NotRunning) {
+                m_process_settings->open();
             }
             break;
 
@@ -161,9 +167,12 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
     case IDT_TRAY:
         switch (msg->lParam) {
         case WM_LBUTTONUP:
-            //m_ui->mouse->setVisible(m_activated);
-            m_ui->keyboard->setVisible(m_activated);
-            m_activated = !m_activated;
+            m_ui->keyboard->setVisible(!m_activated[0]);
+            m_ui->mouse->setVisible(!m_activated[1]);
+            m_activated[0] = !m_activated[0];
+            m_activated[1] = !m_activated[1];
+
+            std::cerr << m_activated[0] << ' ' << m_activated[1] << "\n";
             break;
         case WM_RBUTTONUP:
             SetForegroundWindow(m_hwnd);
@@ -222,17 +231,72 @@ bool MainWindow::event(QEvent* ev) {
 
 #endif
 
+namespace vnepogodin {
+namespace utils {
+    static std::pmr::vector<std::string> fromStringList(QStringList string_list) {
+        const auto& len = string_list.size();
+        std::pmr::vector<std::string> keys(len);
+
+        for (int i = 0; i < len; ++i) {
+            keys[i] = string_list[i].toStdString();
+        }
+
+        return keys;
+    }
+
+    static void toObject(const QSettings* const settings, nlohmann::json& obj) {
+        for (const auto& _ : settings->childKeys()) {
+            if (!_.size()) {
+                return;
+            }
+            QVariant value        = settings->value(_);
+            const std::string key = _.toStdString();
+            switch ((QMetaType::Type)value.type()) {
+            case QMetaType::Bool:
+                obj[key] = value.toBool();
+                break;
+            case QMetaType::Int:
+                obj[key] = value.toInt();
+                break;
+            case QMetaType::Double:
+                obj[key] = value.toDouble();
+                break;
+            case QMetaType::QString:
+                obj[key] = value.toString().toStdString();
+                break;
+            case QMetaType::QStringList:
+                obj[key] = fromStringList(value.toStringList());
+                break;
+            case QMetaType::QByteArray:
+                obj[key] = QString::fromUtf8(value.toByteArray().toBase64()).toStdString();
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    static inline void load_key(nlohmann::json& json, QWidget* obj, const std::string& key) {
+        if (json.contains(key)) {
+            obj->setVisible(!json[key].get<int>());
+            return;
+        }
+    }
+}  // namespace utils
+}  // namespace vnepogodin
+
 MainWindow::MainWindow(QWidget* parent)
-  : QMainWindow(parent),
-    m_sharedMemory(new QSharedMemory("SportTechSharedMemory", this)) {
+  : QMainWindow(parent) {
     m_ui->setupUi(this);
-    m_process = std::make_unique<QProcess>(this);
+    m_process_settings = std::make_unique<QProcess>(this);
+    m_process_charts   = std::make_unique<QProcess>(this);
 
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
-#ifdef _WIN32
-    m_process->setProgram("SportTech-settings.exe");
+#ifdef Q_OS_WIN
+    m_process_settings->setProgram("SportTech-settings.exe");
+    m_process_charts->setProgram("SportTech-charts.exe");
     m_hwnd = (HWND)winId();
     SetForegroundWindow(m_hwnd);
     SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
@@ -242,6 +306,18 @@ MainWindow::MainWindow(QWidget* parent)
         IDT_TIMER,    // timer identifier
         100,          // 100ms interval
         (TIMERPROC)NULL);
+
+    // Create a pipe to send data
+    pipe = CreateNamedPipeW(
+        L"\\\\.\\pipe\\SportTech",  // name of the pipe
+        PIPE_ACCESS_OUTBOUND,       // 1-way pipe -- send only
+        PIPE_TYPE_BYTE,             // send data as a byte stream
+        1,                          // only allow 1 instance of this pipe
+        0,                          // no outbound buffer
+        0,                          // no inbound buffer
+        0,                          // use default wait time
+        NULL                        // use default security attributes
+    );
 
     SetHook();
 
@@ -259,7 +335,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     Shell_NotifyIconW(NIM_ADD, &nid);
 #else
-    m_process->setProgram("SportTech-settings");
+    m_process_settings->setProgram("SportTech-settings");
+    m_process_charts->setProgram("SportTech-charts");
     startTimer(100);
     setMouseTracking(true);
 #endif
@@ -267,28 +344,45 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->keyboard->setFixedSize(size, size);
     m_ui->mouse->setFixedSize(size - 150, size - 150);
 
-    //m_ui->keyboard->hide();
-    m_ui->mouse->hide();
+    QSettings settings(QSettings::UserScope);
+    nlohmann::json json;
+    utils::toObject(&settings, json);
+    utils::load_key(json, m_ui->keyboard, "hideKeyboard");
+    utils::load_key(json, m_ui->mouse, "hideMouse");
+
+    m_activated[0] = !m_ui->keyboard->isHidden();
+    m_activated[1] = !m_ui->mouse->isHidden();
+
+    m_process_charts->open();
+
+    if (poll.joinable())
+        poll.join();
+
+    poll = std::thread(&MainWindow::loadToMemory, this);
 }
 
-void MainWindow::loadFromMemory() {
-    if (m_process->state() == QProcess::Running) {
-        if (!m_sharedMemory->attach()) {
-            return;
+void MainWindow::loadToMemory() {
+    if (m_process_charts->state() == QProcess::Running) {
+#ifdef Q_OS_WIN
+        // This call blocks until a client process connects to the pipe
+        const BOOL result = ConnectNamedPipe(pipe, NULL);
+        if (!result) {
+            CloseHandle(pipe);  // close the pipe
+            DestroyWindow(m_hwnd);
         }
 
-        QBuffer buffer;
-        QDataStream in(&buffer);
+        // This call blocks until a client process reads all the data
+        const wchar_t* data   = L"{ \"a_button\": 89, \"ctrl_button\": 72, \"d_button\": 5, \"e_button\": 2, \"q_button\": 2, \"s_button\": 4, \"shift_button\": 300, \"space_button\": 20, \"w_button\": 135 }";
+        DWORD numBytesWritten = 0;
+        WriteFile(
+            pipe,                            // handle to our outbound pipe
+            data,                            // data to send
+            wcslen(data) * sizeof(wchar_t),  // length of data to send (bytes)
+            &numBytesWritten,                // will store actual amount of data sent
+            NULL                             // not using overlapped IO
+        );
 
-        m_sharedMemory->lock();
-        buffer.setData((char*)m_sharedMemory->constData(), m_sharedMemory->size());
-        buffer.open(QBuffer::ReadOnly);
-
-        QString temp;
-        in >> temp;
-        //const nlohmann::json& json = nlohmann::json::parse(temp.toStdString());
-        m_sharedMemory->unlock();
-
-        m_sharedMemory->detach();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refresh_rate));
+#endif
     }
 }

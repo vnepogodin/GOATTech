@@ -69,6 +69,7 @@ include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
 add_subdirectory(modules/settings)
+add_subdirectory(modules/webui)
 
 ##
 ## Target

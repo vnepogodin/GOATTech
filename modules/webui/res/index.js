@@ -1,0 +1,2 @@
+const ctx = document.getElementById('root').getContext('2d');
+var chart = create_pie_most_pressed(ctx, { a_button: 0, ctrl_button: 0, d_button: 0, e_button: 0, q_button: 0, s_button: 0, shift_button: 0, space_button: 0, w_button: 0 });

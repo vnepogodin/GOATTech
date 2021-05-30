@@ -33,7 +33,6 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
-#include <QSharedMemory>
 #include <QProcess>
 #include <memory>
 
@@ -149,13 +148,16 @@ class MainWindow : public QMainWindow {
     static constexpr auto IDT_TIMER = 1001;
     static constexpr auto IDT_TRAY  = WM_APP;
     HWND m_hwnd                       = nullptr;
-    bool m_activated = false;
+    std::array<bool, 2> m_activated;
 #endif
-    std::unique_ptr<QProcess> m_process;
-    std::unique_ptr<QSharedMemory> m_sharedMemory;
+    const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
+    std::thread poll;
+
+    std::unique_ptr<QProcess> m_process_settings;
+    std::unique_ptr<QProcess> m_process_charts;
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
 
-    void loadFromMemory();
+    void loadToMemory();
 };
 }  // namespace vnepogodin
 
