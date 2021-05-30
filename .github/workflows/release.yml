@@ -5,6 +5,7 @@ on:
     tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
 
 env:
+  BUILD_TYPE: Release
   GITHUB_TOKEN: ${{ secrets.SECRET_CI }}
 
 jobs:
