@@ -18,13 +18,15 @@
 
 #include "settings.hpp"
 
+#include <charconv>
+
 using namespace vnepogodin;
 
 namespace vnepogodin {
 namespace utils {
-    static std::pmr::vector<std::string> fromStringList(QStringList string_list) {
+    static std::vector<std::string> fromStringList(const QStringList& string_list) {
         const auto& len = string_list.size();
-        std::pmr::vector<std::string> keys(len);
+        std::vector<std::string> keys(len);
 
         for (int i = 0; i < len; ++i) {
             keys[i] = string_list[i].toStdString();
@@ -65,15 +67,26 @@ namespace utils {
         }
     }
 
+    static inline int get_propervalue(const nlohmann::json& value) {
+        if (value.is_string()) {
+            const auto& str = value.get<std::string>();
+            int result      = 0;
+            std::from_chars(str.data(), str.data() + str.size(), result);
+            return result;
+        } else {
+            return value.get<int>();
+        }
+    }
+
     static inline void fromObject(const nlohmann::json& obj, QSettings* settings) {
         for (const auto& [key, value] : obj.items()) {
-            settings->setValue(key.c_str(), value.get<int>());
+            settings->setValue(key.c_str(), get_propervalue(value));
         }
     }
 
     static inline void load_key(nlohmann::json& json, QCheckBox* box, const std::string& key) {
         if (json.contains(key)) {
-            box->setChecked(json[key].get<int>());
+            box->setChecked(get_propervalue(json[key]));
             return;
         }
         json[key] = 0;

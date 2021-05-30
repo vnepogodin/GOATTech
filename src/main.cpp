@@ -18,10 +18,24 @@
 
 #include <vnepogodin/mainwindow.h>
 
-#ifndef _WIN32
-#include <sys/file.h>
-#endif
 #include <QApplication>
+
+#ifndef _WIN32
+#include <QSharedMemory>
+bool IsInstanceAlreadyRunning(QSharedMemory &memoryLock) {
+    if (!memoryLock.create(1)) {
+        memoryLock.attach();
+        memoryLock.detach();
+
+        if (!memoryLock.create(1)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+#endif
+
 
 auto main(int argc, char** argv) -> std::int32_t {
 #ifdef _WIN32
@@ -30,13 +44,9 @@ auto main(int argc, char** argv) -> std::int32_t {
     if ((mutex == nullptr) || (GetLastError() == ERROR_ALREADY_EXISTS))
         return 0;
 #else
-    static constexpr auto NAME = "/tmp/overlay.pid";
-    int fd                     = openat(0, NAME, O_CREAT | O_EXCL);
-    if (fd == -1) {
-        close(fd);
-        return 0;
-    }
-    flock(fd, LOCK_EX);
+    QSharedMemory sharedMemoryLock("SportTech-overlay-lock");
+    if (IsInstanceAlreadyRunning(sharedMemoryLock))
+        return -1;
 #endif
 
     // Set application info
@@ -49,11 +59,5 @@ auto main(int argc, char** argv) -> std::int32_t {
     QApplication a(argc, argv);
     vnepogodin::MainWindow w;
     w.showFullScreen();
-    auto res = a.exec();
-#ifndef _WIN32
-    close(fd);
-    unlink(NAME);
-    flock(fd, LOCK_UN);
-#endif
-    return res;
+    return a.exec();
 }

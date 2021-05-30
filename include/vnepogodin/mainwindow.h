@@ -34,6 +34,9 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 #include <QProcess>
+#ifndef _WIN32
+#include <QSystemTrayIcon>
+#endif
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -129,18 +132,18 @@ class MainWindow : public QMainWindow {
     Q_DISABLE_COPY(MainWindow)
  public:
     explicit MainWindow(QWidget* parent = nullptr);
-
-#ifdef _WIN32
     virtual ~MainWindow();
 
+#ifdef _WIN32
  protected:
     // The method for processing native events from the OS in Qt
     virtual bool nativeEvent(const QByteArray& eventType, void* message, long* result) override;
 #else
-    virtual ~MainWindow() = default;
-
  protected:
     virtual bool event(QEvent* ev) override;
+
+ public slots:
+    void iconActivated(QSystemTrayIcon::ActivationReason);
 #endif
 
  private:
@@ -148,16 +151,24 @@ class MainWindow : public QMainWindow {
     static constexpr auto IDT_TIMER = 1001;
     static constexpr auto IDT_TRAY  = WM_APP;
     HWND m_hwnd                       = nullptr;
-    std::array<bool, 2> m_activated;
+#else
+    std::unique_ptr<QSystemTrayIcon> m_trayIcon;
+    std::unique_ptr<QMenu> m_trayMenu;
+    std::unique_ptr<QAction> m_quitAction;
+    std::unique_ptr<QAction> m_settingsAction;
+    int m_timer{};
+
+    void createMenu() noexcept;
 #endif
-    const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
-    std::thread poll;
+    std::array<std::uint8_t, 2> m_activated;
+    //const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
+    //std::thread poll;
 
     std::unique_ptr<QProcess> m_process_settings;
-    std::unique_ptr<QProcess> m_process_charts;
+    //std::unique_ptr<QProcess> m_process_charts;
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
 
-    void loadToMemory();
+    //void loadToMemory();
 };
 }  // namespace vnepogodin
 

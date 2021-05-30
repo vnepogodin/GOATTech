@@ -16,10 +16,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <vnepogodin/mainwindow.h>
-
 #include <vnepogodin/logger.hpp>
+#include <vnepogodin/mainwindow.h>
 #include <vnepogodin/utils.hpp>
+
+#include <charconv>
+#include <iostream>
 
 #include <QSettings>
 
@@ -37,13 +39,13 @@ static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
     return utils::key_code::UNDEFINED;
 }
 
-#ifdef Q_OS_WIN
+#ifdef _WIN32
 
 // variable to store the HANDLE to the hook. Don't declare it anywhere else then globally
 // or you will get problems since every function uses this variable.
 static HHOOK _hook_keyboard = nullptr;
 static HHOOK _hook_mouse    = nullptr;
-static HANDLE pipe          = nullptr;
+//static HANDLE pipe          = nullptr;
 static NOTIFYICONDATAW nid;
 static constexpr auto ID_SETTINGS = 2000;
 static constexpr auto ID_EXIT     = 2001;
@@ -100,21 +102,6 @@ static inline void SetHook() {
     }
 }
 
-MainWindow::~MainWindow() {
-    UnhookWindowsHookEx(_hook_keyboard);
-    UnhookWindowsHookEx(_hook_mouse);
-    KillTimer(m_hwnd, IDT_TIMER);
-    Shell_NotifyIconW(NIM_DELETE, &nid);
-    if (!m_process_settings->waitForFinished())
-        m_process_settings->kill();
-    if (!m_process_charts->waitForFinished())
-        m_process_charts->kill();
-
-    // Close the pipe (automatically disconnects client too)
-    CloseHandle(pipe);
-    logger.close();
-}
-
 static void ShowPopupMenu(HWND hWnd, POINT* curpos, int wDefaultItem) {
     HMENU hPop = CreatePopupMenu();
 
@@ -140,7 +127,6 @@ static void ShowPopupMenu(HWND hWnd, POINT* curpos, int wDefaultItem) {
     DestroyMenu(hPop);
 }
 
-#include <iostream>
 bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* result) {
     Q_UNUSED(eventType)
     Q_UNUSED(result)
@@ -167,12 +153,14 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
     case IDT_TRAY:
         switch (msg->lParam) {
         case WM_LBUTTONUP:
-            m_ui->keyboard->setVisible(!m_activated[0]);
-            m_ui->mouse->setVisible(!m_activated[1]);
-            m_activated[0] = !m_activated[0];
-            m_activated[1] = !m_activated[1];
-
-            std::cerr << m_activated[0] << ' ' << m_activated[1] << "\n";
+            if (m_activated[0] != 2) {
+                m_ui->keyboard->setVisible(m_activated[0]);
+                m_activated[0] = !m_activated[0];
+            }
+            if (m_activated[1] != 2) {
+                m_ui->mouse->setVisible(m_activated[1]);
+                m_activated[1] = !m_activated[1];
+            }
             break;
         case WM_RBUTTONUP:
             SetForegroundWindow(m_hwnd);
@@ -197,14 +185,12 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
 #else
 
 #include <QKeyEvent>
-#include <QMouseEvent>
 /* Qt just uses the QWidget* parent as transient parent for native
  * platform dialogs. This makes it impossible to make them transient
  * to a bare QWindow*. So we catch the show event for the QDialog
  * and setTransientParent here instead. */
 bool MainWindow::event(QEvent* ev) {
     if (ev->type() == QEvent::Timer) {
-        loadFromMemory();
         logger.write();
         return true;
     } else if (ev->type() == QEvent::KeyPress) {
@@ -229,13 +215,58 @@ bool MainWindow::event(QEvent* ev) {
     return QObject::event(ev);
 }
 
+void MainWindow::createMenu() noexcept {
+    // App can exit via Quit menu
+    m_quitAction = std::make_unique<QAction>("&Quit", this);
+    connect(m_quitAction.get(), &QAction::triggered, qApp, &QCoreApplication::quit);
+
+    // Run settings
+    m_settingsAction = std::make_unique<QAction>("&Settings", this);
+    connect(m_settingsAction.get(), &QAction::triggered,
+        [&]() {
+            if (m_process_settings->state() == QProcess::NotRunning)
+                m_process_settings->open();
+        });
+
+    m_trayMenu = std::make_unique<QMenu>(this);
+    m_trayMenu->addAction(m_settingsAction.get());
+    m_trayMenu->addAction(m_quitAction.get());
+}
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
+    switch (reason) {
+    case QSystemTrayIcon::Trigger:
+        if (m_activated[0] != 2) {
+            m_ui->keyboard->setVisible(m_activated[0]);
+            m_activated[0] = !m_activated[0];
+        }
+        if (m_activated[1] != 2) {
+            m_ui->mouse->setVisible(m_activated[1]);
+            m_activated[1] = !m_activated[1];
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 #endif
+
+static void stop_process(QProcess* proc) {
+    if (proc->state() == QProcess::Running) {
+        proc->terminate();
+        proc->waitForFinished();
+        if (!proc->waitForFinished()) {
+            std::cerr << "Process failed to terminate\n";
+        }
+    }
+}
 
 namespace vnepogodin {
 namespace utils {
-    static std::pmr::vector<std::string> fromStringList(QStringList string_list) {
+    static std::vector<std::string> fromStringList(const QStringList& string_list) {
         const auto& len = string_list.size();
-        std::pmr::vector<std::string> keys(len);
+        std::vector<std::string> keys(len);
 
         for (int i = 0; i < len; ++i) {
             keys[i] = string_list[i].toStdString();
@@ -278,8 +309,14 @@ namespace utils {
 
     static inline void load_key(nlohmann::json& json, QWidget* obj, const std::string& key) {
         if (json.contains(key)) {
-            obj->setVisible(!json[key].get<int>());
-            return;
+            if (json[key].is_string()) {
+                const auto& value = json[key].get<std::string>();
+                int result        = 0;
+                std::from_chars(value.data(), value.data() + value.size(), result);
+                obj->setVisible(!result);
+            } else {
+                obj->setVisible(!json[key].get<int>());
+            }
         }
     }
 }  // namespace utils
@@ -289,14 +326,14 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent) {
     m_ui->setupUi(this);
     m_process_settings = std::make_unique<QProcess>(this);
-    m_process_charts   = std::make_unique<QProcess>(this);
+    //m_process_charts   = std::make_unique<QProcess>(this);
 
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
-#ifdef Q_OS_WIN
+#ifdef _WIN32
     m_process_settings->setProgram("SportTech-settings.exe");
-    m_process_charts->setProgram("SportTech-charts.exe");
+    //m_process_charts->setProgram("SportTech-charts.exe");
     m_hwnd = (HWND)winId();
     SetForegroundWindow(m_hwnd);
     SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
@@ -308,7 +345,7 @@ MainWindow::MainWindow(QWidget* parent)
         (TIMERPROC)NULL);
 
     // Create a pipe to send data
-    pipe = CreateNamedPipeW(
+    /*pipe = CreateNamedPipeW(
         L"\\\\.\\pipe\\SportTech",  // name of the pipe
         PIPE_ACCESS_OUTBOUND,       // 1-way pipe -- send only
         PIPE_TYPE_BYTE,             // send data as a byte stream
@@ -317,7 +354,7 @@ MainWindow::MainWindow(QWidget* parent)
         0,                          // no inbound buffer
         0,                          // use default wait time
         NULL                        // use default security attributes
-    );
+    );*/
 
     SetHook();
 
@@ -329,16 +366,33 @@ MainWindow::MainWindow(QWidget* parent)
 
     nid.uCallbackMessage = IDT_TRAY;
 
-    ExtractIconExW(L"icon.ico", 0, NULL, &(nid.hIcon), 1);
+    ExtractIconExW(L"icon.png", 0, NULL, &(nid.hIcon), 1);
 
-    wcscpy_s(nid.szTip, L"Tool Tip");
+    wcscpy_s(nid.szTip, L"SportTech");
 
     Shell_NotifyIconW(NIM_ADD, &nid);
 #else
+    m_trayIcon = std::make_unique<QSystemTrayIcon>(this);
     m_process_settings->setProgram("SportTech-settings");
-    m_process_charts->setProgram("SportTech-charts");
-    startTimer(100);
+    //m_process_charts->setProgram("SportTech-charts");
+    m_timer = startTimer(100);
     setMouseTracking(true);
+
+    // Tray icon menu
+    createMenu();
+    m_trayIcon->setContextMenu(m_trayMenu.get());
+    m_trayIcon->setToolTip("SportTech");
+
+    // App icon
+    const auto& appIcon = QIcon("icon.png");
+    m_trayIcon->setIcon(appIcon);
+    setWindowIcon(appIcon);
+
+    // Displaying the tray icon
+    m_trayIcon->show();
+
+    // Interaction
+    connect(m_trayIcon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
 #endif
     const int& size = qMin(this->size().height(), this->size().width()) - 300;
     m_ui->keyboard->setFixedSize(size, size);
@@ -350,20 +404,40 @@ MainWindow::MainWindow(QWidget* parent)
     utils::load_key(json, m_ui->keyboard, "hideKeyboard");
     utils::load_key(json, m_ui->mouse, "hideMouse");
 
-    m_activated[0] = !m_ui->keyboard->isHidden();
-    m_activated[1] = !m_ui->mouse->isHidden();
+    m_activated[0] = (m_ui->keyboard->isHidden()) ? 2 : 0;
+    m_activated[1] = (m_ui->mouse->isHidden()) ? 2 : 0;
 
-    m_process_charts->open();
+    //m_process_charts->open();
 
-    if (poll.joinable())
-        poll.join();
+    //if (poll.joinable())
+    //    poll.join();
 
-    poll = std::thread(&MainWindow::loadToMemory, this);
+    //poll = std::thread(&MainWindow::loadToMemory, this);
 }
 
+MainWindow::~MainWindow() {
+#ifdef _WIN32
+    UnhookWindowsHookEx(_hook_keyboard);
+    UnhookWindowsHookEx(_hook_mouse);
+    KillTimer(m_hwnd, IDT_TIMER);
+    Shell_NotifyIconW(NIM_DELETE, &nid);
+
+    // Close the pipe (automatically disconnects client too)
+    //CloseHandle(pipe);
+#else
+    killTimer(m_timer);
+#endif
+    //poll.join();
+    stop_process(m_process_settings.get());
+    //stop_process(m_process_charts.get());
+
+    logger.close();
+}
+
+/*
 void MainWindow::loadToMemory() {
     if (m_process_charts->state() == QProcess::Running) {
-#ifdef Q_OS_WIN
+#ifdef _WIN32
         // This call blocks until a client process connects to the pipe
         const BOOL result = ConnectNamedPipe(pipe, NULL);
         if (!result) {
@@ -385,4 +459,4 @@ void MainWindow::loadToMemory() {
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refresh_rate));
 #endif
     }
-}
+}*/
