@@ -88,9 +88,9 @@ namespace utils {
 
 Settings::Settings(QWidget* parent)
   : QWidget(parent),
-    m_sharedMemory(new QSharedMemory("SportTechSharedMemory", this)) {
+    m_settings(new QSettings(QSettings::UserScope)),
+    m_ui(new Ui::Settings) {
     QSettings::setDefaultFormat(QSettings::NativeFormat);
-    m_settings = new QSettings(QSettings::UserScope);
 
     m_ui->setupUi(this);
     connect(m_ui->cancel, SIGNAL(clicked()), this, SLOT(on_cancel()));
@@ -110,6 +110,7 @@ Settings::Settings(QWidget* parent)
 }
 
 Settings::~Settings() {
+    delete m_settings;
     delete m_ui;
 }
 
@@ -119,7 +120,6 @@ void Settings::on_cancel() {
 
 void Settings::on_apply() {
     utils::fromObject(json, m_settings);
-    saveToMemory();
     close();
 }
 
@@ -133,21 +133,4 @@ void Settings::on_hideKeyboard() {
 
 void Settings::on_hideMouse() {
     json["hideMouse"] = m_ui->hideMouse->isChecked();
-}
-
-void Settings::saveToMemory() {
-    QBuffer buffer;
-    buffer.open(QBuffer::ReadWrite);
-    QDataStream out(&buffer);
-    out << json.dump().c_str();
-    int size = buffer.size();
-
-    if (!m_sharedMemory->create(size)) {
-        return;
-    }
-    m_sharedMemory->lock();
-    char* to         = (char*)m_sharedMemory->data();
-    const char* from = buffer.data().data();
-    memcpy(to, from, qMin(m_sharedMemory->size(), size));
-    m_sharedMemory->unlock();
 }

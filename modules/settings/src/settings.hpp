@@ -23,7 +23,6 @@
 #include "ui_settings.h"
 
 #include <QSettings>
-#include <QSharedMemory>
 #include <QWidget>
 
 namespace Ui {
@@ -48,14 +47,10 @@ class Settings : public QWidget {
     void on_hideMouse();
 
  private:
-    std::unique_ptr<QSharedMemory> m_sharedMemory;
     QSettings* m_settings;
-    Ui::Settings* m_ui = new Ui::Settings();
+    Ui::Settings* m_ui;
 
     nlohmann::json json;
-
-    void saveToMemory();
-    void restore();
 };
 }  // namespace vnepogodin
 #endif  // SETTINGS_HPP
