@@ -61,7 +61,7 @@ else()
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Og")
 endif()
 
-if(WIN32)
+if(MSVC)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /LTCG:INCREMENTAL")
 #   find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
 endif()
@@ -78,6 +78,12 @@ add_subdirectory(modules/settings)
 #endif()
 #add_subdirectory(modules/webui)
 
+if(MSVC)
+set(PLATFORM_SPECIFIC_PATH "include/vnepogodin/platform/windows")
+else()
+set(PLATFORM_SPECIFIC_PATH "include/vnepogodin/platform/unix")
+endif()
+
 ##
 ## Target
 ##
@@ -88,6 +94,7 @@ add_executable(${PROJECT_NAME} ${GUI_TYPE}
     include/vnepogodin/thirdparty/json.hpp
     include/vnepogodin/overlay.h src/overlay.cpp
     include/vnepogodin/overlay_mouse.h src/overlay_mouse.cpp
+    ${PLATFORM_SPECIFIC_PATH}/mainwindow.h
     include/vnepogodin/mainwindow.h src/mainwindow.cpp
     forms/overlay.ui forms/overlay_mouse.ui
 
