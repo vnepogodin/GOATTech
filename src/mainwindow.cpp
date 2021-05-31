@@ -185,6 +185,7 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
 #else
 
 #include <QKeyEvent>
+#include <QDesktopWidget>
 /* Qt just uses the QWidget* parent as transient parent for native
  * platform dialogs. This makes it impossible to make them transient
  * to a bare QWindow*. So we catch the show event for the QDialog
@@ -366,7 +367,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     nid.uCallbackMessage = IDT_TRAY;
 
-    ExtractIconExW(L"icon.png", 0, NULL, &(nid.hIcon), 1);
+    ExtractIconExW(L"icon.ico", 0, NULL, &(nid.hIcon), 1);
 
     wcscpy_s(nid.szTip, L"SportTech");
 
@@ -377,6 +378,10 @@ MainWindow::MainWindow(QWidget* parent)
     //m_process_charts->setProgram("SportTech-charts");
     m_timer = startTimer(100);
     setMouseTracking(true);
+
+    const auto& rec = QApplication::desktop()->geometry();
+    const auto& window_size = this->size();
+    move(-(rec.width() - window_size.width() - 900), rec.height() - window_size.height() + 100);
 
     // Tray icon menu
     createMenu();
@@ -394,7 +399,7 @@ MainWindow::MainWindow(QWidget* parent)
     // Interaction
     connect(m_trayIcon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
 #endif
-    const int& size = qMin(this->size().height(), this->size().width()) - 300;
+    const int& size = qMin(window_size.height(), window_size.width()) - 300;
     m_ui->keyboard->setFixedSize(size, size);
     m_ui->mouse->setFixedSize(size - 150, size - 150);
 
