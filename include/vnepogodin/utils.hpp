@@ -22,13 +22,8 @@
 #ifdef _WIN32
 #include <Windows.h>
 #endif
-#include <array>
-#include <charconv>
 #include <string_view>
 #include <unordered_map>
-
-#include <QDesktopWidget>
-#include <QPoint>
 
 namespace vnepogodin {
 namespace utils {
@@ -80,28 +75,6 @@ namespace utils {
 #endif
         }
         return key_code::UNDEFINED;
-    }
-
-    static inline QPoint parse_fromString(std::string&& str) {
-        static std::string delim = ",";
-
-        std::array<int, 2> values;
-
-        size_t pos = str.find(delim);
-        str.erase(0, pos + delim.length());
-        for (int i = 0; i < values.size(); ++i) {
-            pos               = str.find(delim);
-            const auto& value = str.substr(0, pos);
-            int result        = 0;
-            std::from_chars(value.data(), value.data() + value.size(), result);
-
-            values[i] = result;
-            str.erase(0, pos + delim.length());
-        }
-
-        const auto& rec = QApplication::desktop()->geometry();
-
-        return {(rec.width() * values[0] / 100), (rec.height() * values[1] / 100)};
     }
 };  // namespace utils
 }  // namespace vnepogodin

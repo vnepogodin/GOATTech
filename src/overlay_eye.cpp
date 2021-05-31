@@ -19,16 +19,18 @@
 #include <vnepogodin/overlay_eye.h>
 #include <vnepogodin/utils.hpp>
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
+#include <vnepogodin/thirdparty/HTTPRequest.hpp>
+
 #include <array>
+#include <charconv>
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <string>
 #include <unordered_map>
 
+#include <QDesktopWidget>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QString>
@@ -36,10 +38,37 @@
 
 using namespace vnepogodin;
 
+static inline QPoint parse_fromString(std::string& str) {
+    std::regex regexp("\\d+%");
+
+    // flag type for determining the matching behavior (in this case on string objects)
+    std::smatch match;
+
+    std::array<int, 3> coors;
+
+    int i = 0;
+    while (std::regex_search(str, match, regexp)) {
+        std::string tmp   = match.str(0);
+        const auto& value = tmp.erase((tmp.size() == 3) ? 2 : 1);
+        int result        = 0;
+        std::from_chars(value.data(), value.data() + value.size(), result);
+        coors[i] = result;
+        ++i;
+
+        // suffix to find the rest of the string.
+        str = match.suffix().str();
+    }
+    //  const auto& rec = QApplication::desktop()->geometry();
+
+    //return {(rec.width() * coors[0] / 100), (rec.height() * coors[1] / 100)};
+    return {coors[0], coors[1]};
+};
+
 Overlay_Eye::Overlay_Eye(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
 
     setAttribute(Qt::WA_NativeWindow);
+    //startTimer(100);
     connectMouse();
 }
 
@@ -67,7 +96,6 @@ void Overlay_Eye::paintEvent(QPaintEvent*) {
 }
 
 void Overlay_Eye::paintFeatures(QPaintDevice* device, QPoint corner, double scale) {
-    //paintButtons(this, corner, scale);
     paintTouch(this, corner, scale);
 }
 
@@ -125,31 +153,14 @@ bool Overlay_Eye::connectMouse() {
 void Overlay_Eye::paintLoop() {
     while (mouseConnected) {
         update();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refresh_rate));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500 / refresh_rate));
+ //       paintTouch(this, _corner, _scale);
     }
 }
 
 Overlay_Eye::~Overlay_Eye() {
     mouseConnected = false;
     poll.join();
-}
-
-void Overlay_Eye::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    const auto& button = utils::get_key();
-
-    const std::unordered_map<uint8_t, std::pair<std::string_view, QPoint>> button_map = {
-        {utils::key_code::LBUTTON, {"left_button", {10, 0}}},
-        {utils::key_code::RBUTTON, {"right_button", {512, 0}}},
-        {utils::key_code::MBUTTON, {"middle_button", {415, 273}}},
-        {utils::key_code::X1BUTTON, {"x_button", {2, 735}}},
-        {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}};
-    for (const auto& [mask, asset] : button_map) {
-        if (mask == button) {
-            const QPoint& location = QPoint(utils::round((double)asset.second.x() * scale) + corner.x(),
-                utils::round((double)asset.second.y() * scale) + corner.y());
-            paintAsset(asset.first.data(), location, device, scale);
-        }
-    }
 }
 
 void Overlay_Eye::paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale) {
@@ -171,10 +182,19 @@ void Overlay_Eye::paintAsset(std::string name, const QPoint& place, QPaintDevice
 }
 
 void Overlay_Eye::paintTouch(QPaintDevice* device, QPoint corner, double scale) {
-    QPoint tl{17, 17};
-    float height = 300, width = 300;
+    static constexpr auto URL = "http://www.headkraken.gg/soft/SkolkovoJuniorChallenge/9-10/test/";
+    QPoint tl{0, 0};
+    float height = 151, width = 262;
 
-    QPoint coors           = utils::parse_fromString("10:01:31,21,60");
+    http::Request request(URL);
+
+    // send a get request
+    const auto response = request.send("GET");
+    std::string str(response.body.begin(), response.body.end());
+    const auto& res = parse_fromString(str);
+
+    const QPoint coors{static_cast<int>((width * res.x()/100 - 20)), static_cast<int>((height * res.y()/100 - 20))};
+
     const QPoint& location = QPoint(
         (int)utils::round(((double)tl.x() + (double)((unsigned)coors.x() % (unsigned)width)) * scale) + corner.rx(),
         (int)utils::round(((double)tl.y() + (double)((unsigned)coors.y() % (unsigned)height)) * scale) + corner.ry());

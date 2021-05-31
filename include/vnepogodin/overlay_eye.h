@@ -64,14 +64,6 @@ class Overlay_Eye : public QWidget {
     bool connectMouse();
 
     /**
-   * @fn paintButtons
-   * ----------
-   * @description: Helper function for paintEvent that paints buttons that are
-   * on.
-   */
-    void paintButtons(QPaintDevice* device, QPoint corner, double scale);
-
-    /**
    * @fn paintFeatures
    * ----------
    * @description: Helper function for paintEvent that paints mouse features
