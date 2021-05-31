@@ -1,6 +1,15 @@
-# SportTech-overlay [![CI](https://github.com/vnepogodin/SportTech-overlay/workflows/CI/badge.svg)](https://github.com/vnepogodin/SportTech-overlay/actions/workflows/ci.yml)
+# SportTech-overlay
+
+[![CI](https://github.com/vnepogodin/SportTech-overlay/workflows/CI/badge.svg)](https://github.com/vnepogodin/SportTech-overlay/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/vnepogodin/SportTech-overlay.svg)](https://github.com/vnepogodin/SportTech-overlay/blob/develop/LICENSE)
 
 A input overlay which working without OBS Studio.
+
+## Download
+SportTech-overlay is available for Windows and can be downloaded
+from the website.
+
+**[https://gitreleases.dev/gh/vnepogodin/SportTech-overlay/latest/SportTech.zip](https://gitreleases.dev/gh/vnepogodin/SportTech-overlay/latest/SportTech.zip)**
 
 ## Compiling
 
