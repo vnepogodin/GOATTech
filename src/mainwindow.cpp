@@ -399,7 +399,7 @@ MainWindow::MainWindow(QWidget* parent)
     // Interaction
     connect(m_trayIcon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
 #endif
-    const int& size = qMin(window_size.height(), window_size.width()) - 300;
+    const int& size = qMin(this->size().height(), this->size().width()) - 300;
     m_ui->keyboard->setFixedSize(size, size);
     m_ui->mouse->setFixedSize(size - 150, size - 150);
 
