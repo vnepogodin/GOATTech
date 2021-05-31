@@ -16,21 +16,21 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QWidget" name="widget" native="true">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-     <spacer name="horizontalSpacer">
+     <spacer name="horizontalSpacer_2">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
       <property name="sizeHint" stdset="0">
        <size>
         <width>40</width>
-        <height>20</height>
+        <height>70</height>
        </size>
       </property>
      </spacer>
-       </item>
+    </item>
+    <item>
+     <widget class="QWidget" name="widget" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="vnepogodin::Overlay" name="keyboard" native="true">
          <property name="sizePolicy">
@@ -48,29 +48,36 @@
         </widget>
        </item>
        <item>
-           <spacer name="horizontalSpacer">
-               <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                   <size>
-                       <width>40</width>
-                       <height>20</height>
-                   </size>
-               </property>
-           </spacer>
+        <widget class="vnepogodin::Overlay_mouse" name="mouse" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
-       <widget class="vnepogodin::Overlay_mouse" name="mouse" native="true">
-           <property name="geometry">
-               <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>300</width>
-                   <height>200</height>
-               </rect>
-           </property>
-       </widget>
+        <widget class="vnepogodin::Overlay_Eye" name="eye" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -83,7 +90,7 @@
      <x>0</x>
      <y>0</y>
      <width>923</width>
-     <height>23</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>
@@ -99,6 +106,11 @@
    <class>vnepogodin::Overlay_mouse</class>
    <extends>QWidget</extends>
    <header>vnepogodin/overlay_mouse.h</header>
+  </customwidget>
+  <customwidget>
+   <class>vnepogodin::Overlay_Eye</class>
+   <extends>QWidget</extends>
+   <header>vnepogodin/overlay_eye.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>assets/dualshock_black/base.svg</file>
+        <file>assets/dualshock_black/touchpad.svg</file>
         <file>assets/dualshock_black/cursor.svg</file>
         <file>assets/dualshock_black/cursor2.svg</file>
         <file>assets/dualshock_black/disconnected.svg</file>

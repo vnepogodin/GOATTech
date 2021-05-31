@@ -94,6 +94,16 @@ namespace utils {
             json[key] = 1;
         }
     }
+    //    static inline void load_macaddress(nlohmann::json& json) {
+    //        if (json.contains("mac")) {
+    //
+    //            return;
+    //        }
+    //        json[key] = 0;
+    //        if (key == "hideMouse") {
+    //            json[key] = 1;
+    //        }
+    //    }
 }  // namespace utils
 }  // namespace vnepogodin
 

@@ -23,7 +23,9 @@
 #include <charconv>
 #include <iostream>
 
+#include <QFile>
 #include <QSettings>
+#include <QTextStream>
 
 static vnepogodin::Logger logger;
 
@@ -402,6 +404,7 @@ MainWindow::MainWindow(QWidget* parent)
     const int& size = qMin(this->size().height(), this->size().width()) - 300;
     m_ui->keyboard->setFixedSize(size, size);
     m_ui->mouse->setFixedSize(size - 150, size - 150);
+    m_ui->eye->setFixedSize(size - 100, size - 100);
 
     QSettings settings(QSettings::UserScope);
     nlohmann::json json;

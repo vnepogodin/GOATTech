@@ -94,10 +94,11 @@ add_executable(${PROJECT_NAME} ${GUI_TYPE}
     include/vnepogodin/thirdparty/json.hpp
     include/vnepogodin/overlay.h src/overlay.cpp
     include/vnepogodin/overlay_mouse.h src/overlay_mouse.cpp
+    include/vnepogodin/overlay_eye.h src/overlay_eye.cpp
     forms/mainwindow.ui
     ${PLATFORM_SPECIFIC_PATH}/mainwindow.h
     include/vnepogodin/mainwindow.h src/mainwindow.cpp
-    forms/overlay.ui forms/overlay_mouse.ui
+    forms/overlay.ui forms/overlay_mouse.ui forms/overlay_eye.ui
 
     src/main.cpp overlay.qrc
     )
