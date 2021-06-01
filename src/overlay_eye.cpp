@@ -17,9 +17,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include <vnepogodin/overlay_eye.h>
-#include <vnepogodin/utils.hpp>
-
 #include <vnepogodin/thirdparty/HTTPRequest.hpp>
+
+#include <vnepogodin/logger.hpp>
+#include <vnepogodin/utils.hpp>
 
 #include <array>
 #include <charconv>

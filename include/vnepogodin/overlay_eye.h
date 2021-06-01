@@ -21,7 +21,6 @@
 
 #include <QWidget>
 #include <thread>
-#include <vnepogodin/logger.hpp>
 
 #include <ui_overlay_eye.h>
 

@@ -22,6 +22,10 @@
 #include <vector>
 
 #ifdef _WIN32
+#pragma comment(lib, "Ws2_32.lib")
+#undef _WINSOCKAPI_
+#define _WINSOCKAPI_
+#include <windows.h>
 #  pragma push_macro("WIN32_LEAN_AND_MEAN")
 #  pragma push_macro("NOMINMAX")
 #  ifndef WIN32_LEAN_AND_MEAN
