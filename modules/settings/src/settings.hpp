@@ -46,7 +46,9 @@ class Settings : public QWidget {
     void on_hideKeyboard();
     void on_hideMouse();
 
- private:
+    void on_horizontalSlider_actionTriggered(int action);
+
+private:
     QSettings* m_settings;
     Ui::Settings* m_ui;
 

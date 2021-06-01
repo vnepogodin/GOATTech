@@ -49,6 +49,7 @@ class Overlay_Eye : public QWidget {
  private:
     /** Private Members */
     bool mouseConnected    = false;
+    int radius = 20;
     const int refresh_rate = 500;  // Frequency of mouse input checking in hertz
     std::thread poll;
 

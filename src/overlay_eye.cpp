@@ -35,6 +35,7 @@
 #include <QPainter>
 #include <QString>
 #include <QSvgRenderer>
+#include <QSettings>
 
 using namespace vnepogodin;
 
@@ -62,7 +63,68 @@ static inline QPoint parse_fromString(std::string& str) {
 
     //return {(rec.width() * coors[0] / 100), (rec.height() * coors[1] / 100)};
     return {coors[0], coors[1]};
+}
+
+static inline int load_key(nlohmann::json& json, const std::string& key) {
+    if (json.contains(key)) {
+        if (json[key].is_string()) {
+            const auto& value = json[key].get<std::string>();
+            int result        = 0;
+            std::from_chars(value.data(), value.data() + value.size(), result);
+            return result;
+        } else {
+            return json[key].get<int>();
+        }
+    }
+
+    return 20;
+}
+
+namespace vnepogodin {
+namespace utils {
+static std::vector<std::string> fromStringList(const QStringList& string_list) {
+    const auto& len = string_list.size();
+    std::vector<std::string> keys(len);
+
+    for (int i = 0; i < len; ++i) {
+        keys[i] = string_list[i].toStdString();
+    }
+
+    return keys;
+}
+static void toObject(const QSettings* const settings, nlohmann::json& obj) {
+    for (const auto& _ : settings->childKeys()) {
+        if (!_.size()) {
+            return;
+        }
+        QVariant value        = settings->value(_);
+        const std::string key = _.toStdString();
+        switch ((QMetaType::Type)value.type()) {
+        case QMetaType::Bool:
+            obj[key] = value.toBool();
+            break;
+        case QMetaType::Int:
+            obj[key] = value.toInt();
+            break;
+        case QMetaType::Double:
+            obj[key] = value.toDouble();
+            break;
+        case QMetaType::QString:
+            obj[key] = value.toString().toStdString();
+            break;
+        case QMetaType::QStringList:
+            obj[key] = fromStringList(value.toStringList());
+            break;
+        case QMetaType::QByteArray:
+            obj[key] = QString::fromUtf8(value.toByteArray().toBase64()).toStdString();
+            break;
+        default:
+            break;
+        }
+    }
+}
 };
+}
 
 Overlay_Eye::Overlay_Eye(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
@@ -70,6 +132,11 @@ Overlay_Eye::Overlay_Eye(QWidget* parent) : QWidget(parent) {
     setAttribute(Qt::WA_NativeWindow);
     //startTimer(100);
     connectMouse();
+    QSettings settings(QSettings::UserScope);
+    nlohmann::json json;
+    utils::toObject(&settings, json);
+
+    radius = load_key(json, "radius");
 }
 
 void Overlay_Eye::paintEvent(QPaintEvent*) {

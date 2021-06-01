@@ -94,6 +94,13 @@ namespace utils {
             json[key] = 1;
         }
     }
+    static inline void load_slider(nlohmann::json& json, QSlider* slider, const std::string& key) {
+        if (json.contains(key)) {
+            slider->setValue(get_propervalue(json[key]));
+            return;
+        }
+        json[key] = 20;
+    }
     //    static inline void load_macaddress(nlohmann::json& json) {
     //        if (json.contains("mac")) {
     //
@@ -104,7 +111,7 @@ namespace utils {
     //            json[key] = 1;
     //        }
     //    }
-}  // namespace utils
+} // namespace utils
 }  // namespace vnepogodin
 
 Settings::Settings(QWidget* parent)
@@ -125,6 +132,7 @@ Settings::Settings(QWidget* parent)
     utils::load_key(json, m_ui->isRun, "isRun");
     utils::load_key(json, m_ui->hideKeyboard, "hideKeyboard");
     utils::load_key(json, m_ui->hideMouse, "hideMouse");
+    utils::load_slider(json, m_ui->horizontalSlider, "radius");
 
     // set window size
     this->resize(size().width() * 0.8, size().height() * 0.7);
@@ -133,6 +141,11 @@ Settings::Settings(QWidget* parent)
 Settings::~Settings() {
     delete m_settings;
     delete m_ui;
+}
+
+void Settings::on_horizontalSlider_actionTriggered(int action) {
+    json["radius"] = m_ui->horizontalSlider->value();
+
 }
 
 void Settings::on_cancel() {
