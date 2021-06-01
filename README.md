@@ -9,7 +9,7 @@ A input overlay which working without OBS Studio.
 SportTech-overlay is available for Windows and can be downloaded
 from the website.
 
-**[https://torrenttor.ru/SportTech/download](https://gitreleases.dev/gh/vnepogodin/SportTech-overlay/latest/SportTech.zip)**
+**[https://torrenttor.ru/SportTech/download](https://gitreleases.dev/gh/vnepogodin/SportTech-overlay/latest/SportTech-installer.exe)**
 
 ## Compiling
 
