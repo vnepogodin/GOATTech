@@ -24,14 +24,11 @@
 
 #include <array>
 #include <charconv>
-#include <cmath>
 #include <fstream>
-#include <iostream>
 #include <regex>
 #include <string>
 #include <unordered_map>
 
-#include <QDesktopWidget>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QString>
@@ -41,7 +38,7 @@
 using namespace vnepogodin;
 
 static inline QPoint parse_fromString(std::string& str) {
-    std::regex regexp("\\d+%");
+    std::regex regexp("-?\\d+%");
 
     // flag type for determining the matching behavior (in this case on string objects)
     std::smatch match;
@@ -60,9 +57,9 @@ static inline QPoint parse_fromString(std::string& str) {
         // suffix to find the rest of the string.
         str = match.suffix().str();
     }
-    //  const auto& rec = QApplication::desktop()->geometry();
+    if (coors[1] >= 0 && coors[1] <= 5)
+        coors[1] += 6;
 
-    //return {(rec.width() * coors[0] / 100), (rec.height() * coors[1] / 100)};
     return {coors[0], coors[1]};
 }
 
@@ -124,6 +121,16 @@ static void toObject(const QSettings* const settings, nlohmann::json& obj) {
         }
     }
 }
+
+static bool isPointInsideCircle(const QPoint& point, const QPoint& circle, const int& radius) {
+    const auto& d = std::sqrt(std::pow(point.x() - circle.x(), 2) + std::pow(point.y() - circle.y(), 2));
+
+    return d <= radius;
+}
+
+static constexpr bool coors_valid(const QPoint& point) {
+    return !((point.x() < 0) || (point.y() < 0));
+}
 };
 }
 
@@ -131,13 +138,14 @@ Overlay_Eye::Overlay_Eye(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
 
     setAttribute(Qt::WA_NativeWindow);
-    //startTimer(100);
     connectMouse();
     QSettings settings(QSettings::UserScope);
     nlohmann::json json;
     utils::toObject(&settings, json);
 
     radius = load_key(json, "radius");
+    centerX = load_key(json, "centerX");
+    centerY = load_key(json, "centerY");
 }
 
 void Overlay_Eye::paintEvent(QPaintEvent*) {
@@ -145,7 +153,7 @@ void Overlay_Eye::paintEvent(QPaintEvent*) {
     QSvgRenderer renderer;
 
     if (mouseConnected)
-        renderer.load(QString(":/assets/dualshock_black/touchpad.svg"));
+        renderer.load(QString(":/assets/eye/base.svg"));
     else
         renderer.load(QString(":/assets/mouse/disconnected.svg"));
 
@@ -221,8 +229,7 @@ bool Overlay_Eye::connectMouse() {
 void Overlay_Eye::paintLoop() {
     while (mouseConnected) {
         update();
-        std::this_thread::sleep_for(std::chrono::milliseconds(500 / refresh_rate));
- //       paintTouch(this, _corner, _scale);
+        std::this_thread::sleep_for(std::chrono::milliseconds(refresh_rate));
     }
 }
 
@@ -232,7 +239,7 @@ Overlay_Eye::~Overlay_Eye() {
 }
 
 void Overlay_Eye::paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale) {
-    name = ":/assets/mouse/" + name + ".svg";
+    name = ":/assets/eye/" + name + ".svg";
     QSvgRenderer renderer;
     renderer.load(QString(name.c_str()));
 
@@ -253,19 +260,25 @@ void Overlay_Eye::paintTouch(QPaintDevice* device, QPoint corner, double scale) 
     static constexpr auto URL = "http://www.headkraken.gg/soft/SkolkovoJuniorChallenge/9-10/test/";
     QPoint tl{0, 0};
     float height = 151, width = 262;
-
     http::Request request(URL);
 
     // send a get request
     const auto response = request.send("GET");
     std::string str(response.body.begin(), response.body.end());
     const auto& res = parse_fromString(str);
+    if (!utils::coors_valid(res)) {
+        return;
+    }
 
-    const QPoint coors{static_cast<int>((width * res.x()/100 - 20)), static_cast<int>((height * res.y()/100 - 20))};
+    const QPoint coors{static_cast<int>((width * res.x() / 100 - 14)), static_cast<int>((height * res.y() / 100 - 14))};
 
     const QPoint& location = QPoint(
         (int)utils::round(((double)tl.x() + (double)((unsigned)coors.x() % (unsigned)width)) * scale) + corner.rx(),
         (int)utils::round(((double)tl.y() + (double)((unsigned)coors.y() % (unsigned)height)) * scale) + corner.ry());
 
-    paintAsset("cursor", location, device, scale - 0.3);
+    if (utils::isPointInsideCircle(res, QPoint(centerX, centerY), radius)) {
+        paintAsset("green", location, device, scale - 0.5);
+    } else {
+        paintAsset("red", location, device, scale - 0.5);
+    }
 }

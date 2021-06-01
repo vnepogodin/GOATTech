@@ -22,5 +22,8 @@
         <file>assets/mouse/right_button.svg</file>
         <file>assets/mouse/middle_button.svg</file>
         <file>assets/mouse/x_button.svg</file>
+        <file>assets/eye/base.svg</file>
+        <file>assets/eye/green.svg</file>
+        <file>assets/eye/red.svg</file>
     </qresource>
 </RCC>

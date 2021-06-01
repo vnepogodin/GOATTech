@@ -19,6 +19,7 @@
 #include "settings.hpp"
 
 #include <charconv>
+#include <iostream>
 
 using namespace vnepogodin;
 
@@ -84,6 +85,16 @@ namespace utils {
         }
     }
 
+    static inline int parse_int(const std::string_view& str) {
+        int result = 0;
+        std::from_chars(str.data(), str.data() + str.size(), result);
+        return result;
+    }
+
+    static inline std::string parse_string(const int& value) {
+        return std::to_string(value);
+    }
+
     static inline void load_key(nlohmann::json& json, QCheckBox* box, const std::string& key) {
         if (json.contains(key)) {
             box->setChecked(get_propervalue(json[key]));
@@ -94,12 +105,16 @@ namespace utils {
             json[key] = 1;
         }
     }
-    static inline void load_slider(nlohmann::json& json, QSlider* slider, const std::string& key) {
+
+    static inline void load_text(nlohmann::json& json, QLineEdit* text, const std::string& key) {
         if (json.contains(key)) {
-            slider->setValue(get_propervalue(json[key]));
+            text->setText(parse_string(get_propervalue(json[key])).c_str());
             return;
         }
-        json[key] = 20;
+        json[key] = 50;
+        if (key == "radius") {
+            json[key] = 20;
+        }
     }
     //    static inline void load_macaddress(nlohmann::json& json) {
     //        if (json.contains("mac")) {
@@ -111,7 +126,7 @@ namespace utils {
     //            json[key] = 1;
     //        }
     //    }
-} // namespace utils
+}  // namespace utils
 }  // namespace vnepogodin
 
 Settings::Settings(QWidget* parent)
@@ -132,7 +147,9 @@ Settings::Settings(QWidget* parent)
     utils::load_key(json, m_ui->isRun, "isRun");
     utils::load_key(json, m_ui->hideKeyboard, "hideKeyboard");
     utils::load_key(json, m_ui->hideMouse, "hideMouse");
-    utils::load_slider(json, m_ui->horizontalSlider, "radius");
+    utils::load_text(json, m_ui->lineEdit, "radius");
+    utils::load_text(json, m_ui->lineEdit_2, "centerX");
+    utils::load_text(json, m_ui->lineEdit_3, "centerY");
 
     // set window size
     this->resize(size().width() * 0.8, size().height() * 0.7);
@@ -143,9 +160,18 @@ Settings::~Settings() {
     delete m_ui;
 }
 
-void Settings::on_horizontalSlider_actionTriggered(int action) {
-    json["radius"] = m_ui->horizontalSlider->value();
+void Settings::on_lineEdit_3_editingFinished() {
+    const auto& value = utils::parse_int(m_ui->lineEdit_3->text().toStdString());
+    json["centerY"]   = value;
+}
 
+void Settings::on_lineEdit_2_editingFinished() {
+    const auto& value = utils::parse_int(m_ui->lineEdit_2->text().toStdString());
+    json["centerX"]   = value;
+}
+
+void Settings::on_lineEdit_editingFinished() {
+    json["radius"] = m_ui->lineEdit->text().toStdString();
 }
 
 void Settings::on_cancel() {
