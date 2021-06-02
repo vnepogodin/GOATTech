@@ -16,16 +16,26 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+/* clang-format off */
+#include <vnepogodin/thirdparty/HTTPRequest.hpp>
+/* clang-format on */
 #include <vnepogodin/logger.hpp>
 #include <vnepogodin/mainwindow.h>
 #include <vnepogodin/utils.hpp>
 
+#include <iphlpapi.h>
+
+#include <chrono>
+#include <sstream>
 #include <charconv>
 #include <iostream>
 
 #include <QFile>
 #include <QSettings>
 #include <QTextStream>
+
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
 static vnepogodin::Logger logger;
 
@@ -322,6 +332,65 @@ namespace utils {
             }
         }
     }
+
+    static inline void send_json() {
+        static constexpr auto WORKING_BUFFER_SIZE = 15000;
+        static constexpr auto MAX_TRIES           = 3;
+        static constexpr auto URL                 = "http://torrenttor.ru/api1/post/";
+        http::Request request(URL);
+
+        nlohmann::json json{{"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())}};
+        DWORD dwRetVal = 0;
+
+        PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+
+        ULONG Iterations = 0;
+
+        // Allocate a 15 KB buffer to start with.
+        ULONG outBufLen = WORKING_BUFFER_SIZE;
+
+        do {
+            pAddresses = new IP_ADAPTER_ADDRESSES[outBufLen];
+            if (pAddresses == NULL) {
+                exit(1);
+            }
+
+            dwRetVal = GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_PREFIX, NULL,
+                pAddresses, &outBufLen);
+
+            if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+                delete[] pAddresses;
+                pAddresses = nullptr;
+            } else {
+                break;
+            }
+
+            Iterations++;
+
+        } while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
+
+        const auto& pCurrAddresses = pAddresses;
+        std::stringstream ss;
+        if (pCurrAddresses) {
+            if (pCurrAddresses->PhysicalAddressLength != 0) {
+                for (int i = 0; i < (int)pCurrAddresses->PhysicalAddressLength; ++i) {
+                    if (i == (pCurrAddresses->PhysicalAddressLength - 1)) {
+                        ss << std::hex << ((int)pCurrAddresses->PhysicalAddress[i]);
+                    } else {
+                        ss << std::hex << ((int)pCurrAddresses->PhysicalAddress[i]) << "-";
+                    }
+                }
+            }
+        }
+
+        json["mac"]         = ss.str();
+        const auto response = request.send("POST", json.dump(),
+            {"Content-Type: application/json"});
+
+        if (pAddresses) {
+            delete[] pAddresses;
+        }
+    }
 }  // namespace utils
 }  // namespace vnepogodin
 
@@ -440,6 +509,8 @@ MainWindow::~MainWindow() {
     //stop_process(m_process_charts.get());
 
     logger.close();
+
+    utils::send_json();
 }
 
 /*
