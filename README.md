@@ -15,37 +15,21 @@ from the website.
 
 Any C++20 compiler should work. For compilers with partial C++20 support it may work. If your compiler has the C++20 features that are available in Visual Studio 2019 / GCC 10.2 then it will work.
 
-To build the GUI, you need Qt.
-
-There are multiple compilation choices:
-* cmake - cross platform build tool
-* Windows: Visual Studio (VS 2019 and above)
-* Windows: Qt Creator + msvc
-* gnu make
-* g++ 10.2 (or later)
-* clang++
+To build the GUI, you need Qt. And `CMAKE_PREFIX_PATH` must be specified with qt installation path for Windows build.
 
 ### cmake
 
-Example, compiling SportTech-overlay with cmake:
+Example, compiling GOATTech for Windows release build:
 
 ```shell
-cmake -S . -B build
-cmake --build build
+cmake -S . -B build -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="c:\qt\5.15.2"
+cmake --build build --config Release
 ```
-
-If you want to compile a release build.
-`-DCMAKE_BUILD_TYPE=Release`
-
-Using cmake you can generate project files for Visual Studio,XCode,etc.
 
 ## Usage
 
-The simplest way to start is to run this command:
-
-```shell
-overlay
-```
+Overlay can be hidden by clicking tray once except "eye-tracker" overlay.
+Settings can be opened in tray by clicking first line. And second line to exit application.
 
 ## Contributing
 
