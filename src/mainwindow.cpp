@@ -74,7 +74,7 @@ static LRESULT __stdcall HookCallbackKeyboard(int nCode, WPARAM wParam, LPARAM l
         }
     }
 
-    // call the next hook in the hook chain. This is nessecary or your hook chain will break and the hook stops
+    // call the next hook in the hook chain. This is necessary or your hook chain will break and the hook stops
     return CallNextHookEx(_hook_keyboard, nCode, wParam, lParam);
 }
 static LRESULT __stdcall HookCallbackMouse(int nCode, WPARAM wParam, LPARAM lParam) {
@@ -96,7 +96,7 @@ static LRESULT __stdcall HookCallbackMouse(int nCode, WPARAM wParam, LPARAM lPar
         }
     }
 
-    // call the next hook in the hook chain. This is nessecary or your hook chain will break and the hook stops
+    // call the next hook in the hook chain. This is necessary or your hook chain will break and the hook stops
     return CallNextHookEx(_hook_mouse, nCode, wParam, lParam);
 }
 
