@@ -1,15 +1,15 @@
-# SportTech-overlay
+# GOATTech
 
-[![CI](https://github.com/vnepogodin/SportTech-overlay/workflows/CI/badge.svg)](https://github.com/vnepogodin/SportTech-overlay/actions/workflows/ci.yml)
-[![license](https://img.shields.io/github/license/vnepogodin/SportTech-overlay.svg)](https://github.com/vnepogodin/SportTech-overlay/blob/develop/LICENSE)
+[![CI](https://github.com/vnepogodin/GOATTech/workflows/CI/badge.svg)](https://github.com/vnepogodin/GOATTech/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/vnepogodin/GOATTech.svg)](https://github.com/vnepogodin/GOATTech/blob/develop/LICENSE)
 
 A input overlay which working without OBS Studio.
 
 ## Download
-SportTech-overlay is available for Windows and can be downloaded
+GOATTech is available for Windows and can be downloaded
 from the website.
 
-**[https://torrenttor.ru/SportTech/download](https://gitreleases.dev/gh/vnepogodin/SportTech-overlay/latest/SportTech-installer.exe)**
+**[https://torrenttor.ru/GOATTech/download](https://gitreleases.dev/gh/vnepogodin/GOATTech/latest/SportTech-installer.exe)**
 
 ## Compiling
 
