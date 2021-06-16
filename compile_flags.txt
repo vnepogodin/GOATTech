@@ -1,0 +1,9 @@
+-DQT_WIDGETS_LIB
+-I/usr/include/qt/QtWidgets
+-I/usr/include/qt
+-I/usr/include/qt/QtCore
+-DQT_GUI_LIB
+-I/usr/include/qt/QtGui
+-DQT_CORE_LIB
+-Iinclude
+-xc++

