@@ -291,7 +291,7 @@
    </palette>
   </property>
   <property name="windowTitle">
-   <string>SportTech Settings</string>
+   <string>GOATTech Settings</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../settings.qrc">
@@ -768,7 +768,7 @@ padding: 3px 10px 3px 10px;
          </font>
         </property>
         <property name="text">
-         <string>SportTech</string>
+         <string>GOATTech</string>
         </property>
        </widget>
       </item>

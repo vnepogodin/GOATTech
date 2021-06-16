@@ -1,4 +1,4 @@
-# SportTech-overlay [![CI](https://github.com/vnepogodin/SportTech-overlay/workflows/CI/badge.svg)](https://github.com/vnepogodin/SportTech-overlay/actions/workflows/ci.yml)
+# GOATTech [![CI](https://github.com/vnepogodin/GOATTech/workflows/CI/badge.svg)](https://github.com/vnepogodin/GOATTech/actions/workflows/ci.yml)
 
 Наложение ввода, которое работает без OBS Studio.
 
@@ -18,7 +18,7 @@
 
 ### cmake
 
-Пример, компиляция SportTech-overlay с cmake:
+Пример, компиляция GOATTech с cmake:
 
 ```shell
 cmake -S . -B build

@@ -1,6 +1,6 @@
 // Copyright (C) 2021 Vladislav Nepogodin
 //
-// This file is part of SportTech overlay project.
+// This file is part of GOATTech project.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 
     // Set application info
     QCoreApplication::setOrganizationName("torrenttor");
-    QCoreApplication::setApplicationName("SportTech");
+    QCoreApplication::setApplicationName("GOATTech");
 
     vnepogodin::Settings s;
     s.show();

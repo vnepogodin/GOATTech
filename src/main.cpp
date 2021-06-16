@@ -1,6 +1,6 @@
 // Copyright (C) 2021 Vladislav Nepogodin
 //
-// This file is part of SportTech overlay project.
+// This file is part of GOATTech project.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -44,14 +44,14 @@ auto main(int argc, char** argv) -> std::int32_t {
     if ((mutex == nullptr) || (GetLastError() == ERROR_ALREADY_EXISTS))
         return 0;
 #else
-    QSharedMemory sharedMemoryLock("SportTech-overlay-lock");
+    QSharedMemory sharedMemoryLock("GOATTech-lock");
     if (IsInstanceAlreadyRunning(sharedMemoryLock))
         return -1;
 #endif
 
     // Set application info
     QCoreApplication::setOrganizationName("torrenttor");
-    QCoreApplication::setApplicationName("SportTech");
+    QCoreApplication::setApplicationName("GOATTech");
 
     // Set application attributes
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

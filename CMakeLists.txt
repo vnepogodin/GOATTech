@@ -24,7 +24,7 @@ find_package(Qt5 COMPONENTS Widgets Svg REQUIRED)
 ##
 ## OPTIONS
 ##
-#option(ENABLE_SETTINGS "Enable SportTech Settings" ON)
+#option(ENABLE_SETTINGS "Enable GOATTech Settings" ON)
 
 ##
 ## CONFIGURATION

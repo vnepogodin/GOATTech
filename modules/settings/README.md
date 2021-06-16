@@ -1,4 +1,4 @@
-# SportTech Settings
-GUI App to configure SportTech.
+# GOATTech Settings
+GUI App to configure GOATTech.
 
 ![](preview.png)

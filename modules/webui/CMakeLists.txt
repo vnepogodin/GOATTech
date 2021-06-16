@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 ## PROJECT
 ## name and version
 ##
-project(SportTech-charts
+project(GOATTech-charts
         VERSION 0.8.5)
 
 ##

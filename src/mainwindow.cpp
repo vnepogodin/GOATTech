@@ -1,6 +1,6 @@
 // Copyright (C) 2021 Vladislav Nepogodin
 //
-// This file is part of SportTech overlay project.
+// This file is part of GOATTech project.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -404,8 +404,8 @@ MainWindow::MainWindow(QWidget* parent)
     setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
 #ifdef _WIN32
-    m_process_settings->setProgram("SportTech-settings.exe");
-    //m_process_charts->setProgram("SportTech-charts.exe");
+    m_process_settings->setProgram("GOATTech-settings.exe");
+    //m_process_charts->setProgram("GOATTech-charts.exe");
     m_hwnd = (HWND)winId();
     SetForegroundWindow(m_hwnd);
     SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
@@ -418,14 +418,14 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Create a pipe to send data
     /*pipe = CreateNamedPipeW(
-        L"\\\\.\\pipe\\SportTech",  // name of the pipe
-        PIPE_ACCESS_OUTBOUND,       // 1-way pipe -- send only
-        PIPE_TYPE_BYTE,             // send data as a byte stream
-        1,                          // only allow 1 instance of this pipe
-        0,                          // no outbound buffer
-        0,                          // no inbound buffer
-        0,                          // use default wait time
-        NULL                        // use default security attributes
+        L"\\\\.\\pipe\\GOATTech",  // name of the pipe
+        PIPE_ACCESS_OUTBOUND,      // 1-way pipe -- send only
+        PIPE_TYPE_BYTE,            // send data as a byte stream
+        1,                         // only allow 1 instance of this pipe
+        0,                         // no outbound buffer
+        0,                         // no inbound buffer
+        0,                         // use default wait time
+        NULL                       // use default security attributes
     );*/
 
     SetHook();
@@ -440,13 +440,13 @@ MainWindow::MainWindow(QWidget* parent)
 
     ExtractIconExW(L"icon.ico", 0, NULL, &(nid.hIcon), 1);
 
-    wcscpy_s(nid.szTip, L"SportTech");
+    wcscpy_s(nid.szTip, L"GOATTech");
 
     Shell_NotifyIconW(NIM_ADD, &nid);
 #else
     m_trayIcon = std::make_unique<QSystemTrayIcon>(this);
-    m_process_settings->setProgram("SportTech-settings");
-    //m_process_charts->setProgram("SportTech-charts");
+    m_process_settings->setProgram("GOATTech-settings");
+    //m_process_charts->setProgram("GOATTech-charts");
     m_timer = startTimer(100);
     setMouseTracking(true);
 
@@ -457,7 +457,7 @@ MainWindow::MainWindow(QWidget* parent)
     // Tray icon menu
     createMenu();
     m_trayIcon->setContextMenu(m_trayMenu.get());
-    m_trayIcon->setToolTip("SportTech");
+    m_trayIcon->setToolTip("GOATTech");
 
     // App icon
     const auto& appIcon = QIcon("icon.png");

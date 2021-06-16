@@ -1,6 +1,6 @@
 // Copyright (C) 2021 Vladislav Nepogodin
 //
-// This file is part of SportTech overlay project.
+// This file is part of GOATTech project.
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -97,7 +97,7 @@ Webui::Webui(QWidget* parent) : QWidget(parent) {
 
 #ifdef _WIN32
     pipe = CreateFileW(
-        L"\\\\.\\pipe\\SportTech",
+        L"\\\\.\\pipe\\GOATTech",
         GENERIC_READ,  // only need read access
         FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
