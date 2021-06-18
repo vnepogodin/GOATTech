@@ -13,7 +13,7 @@ project(GOATTech-settings
 include(FindThreads)
 
 find_package(Threads REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 
 ##
 ## CONFIGURATION
@@ -21,9 +21,6 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
@@ -46,7 +43,7 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG /Od")
 else()
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -flto")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Og")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
 endif()
 
 if(WIN32)
@@ -68,5 +65,6 @@ add_executable(${PROJECT_NAME} ${GUI_TYPE}
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets ${CMAKE_THREAD_LIBS_INIT})
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Multimedia ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Widgets_INCLUDES})

@@ -387,8 +387,7 @@ namespace utils {
             delete[] pAddresses;
         }
 #endif
-        [[maybe_unused]]
-        const auto& response = request.send("POST", json.dump(),
+        [[maybe_unused]] const auto& response = request.send("POST", json.dump(),
             {"Content-Type: application/json"});
     }
 }  // namespace utils
@@ -398,14 +397,12 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent) {
     m_ui->setupUi(this);
     m_process_settings = std::make_unique<QProcess>(this);
-    //m_process_charts   = std::make_unique<QProcess>(this);
 
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
 #ifdef _WIN32
     m_process_settings->setProgram("GOATTech-settings.exe");
-    //m_process_charts->setProgram("GOATTech-charts.exe");
     m_hwnd = (HWND)winId();
     SetForegroundWindow(m_hwnd);
     SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
@@ -415,18 +412,6 @@ MainWindow::MainWindow(QWidget* parent)
         IDT_TIMER,    // timer identifier
         100,          // 100ms interval
         (TIMERPROC)NULL);
-
-    // Create a pipe to send data
-    /*pipe = CreateNamedPipeW(
-        L"\\\\.\\pipe\\GOATTech",  // name of the pipe
-        PIPE_ACCESS_OUTBOUND,      // 1-way pipe -- send only
-        PIPE_TYPE_BYTE,            // send data as a byte stream
-        1,                         // only allow 1 instance of this pipe
-        0,                         // no outbound buffer
-        0,                         // no inbound buffer
-        0,                         // use default wait time
-        NULL                       // use default security attributes
-    );*/
 
     SetHook();
 
@@ -446,7 +431,6 @@ MainWindow::MainWindow(QWidget* parent)
 #else
     m_trayIcon = std::make_unique<QSystemTrayIcon>(this);
     m_process_settings->setProgram("GOATTech-settings");
-    //m_process_charts->setProgram("GOATTech-charts");
     m_timer = startTimer(100);
     setMouseTracking(true);
 
@@ -476,20 +460,16 @@ MainWindow::MainWindow(QWidget* parent)
     m_ui->eye->setFixedSize(size - 100, size - 100);
 
     QSettings settings(QSettings::UserScope);
+    QSettings::setDefaultFormat(QSettings::NativeFormat);
     nlohmann::json json;
     utils::toObject(&settings, json);
     utils::load_key(json, m_ui->keyboard, "hideKeyboard");
     utils::load_key(json, m_ui->mouse, "hideMouse");
 
+    m_recorder = std::make_unique<vnepogodin::Recorder>(json["inputDevice"].get<std::string>());
+
     m_activated[0] = (m_ui->keyboard->isHidden()) ? 2 : 0;
     m_activated[1] = (m_ui->mouse->isHidden()) ? 2 : 0;
-
-    //m_process_charts->open();
-
-    //if (poll.joinable())
-    //    poll.join();
-
-    //poll = std::thread(&MainWindow::loadToMemory, this);
 }
 
 MainWindow::~MainWindow() {
@@ -499,43 +479,12 @@ MainWindow::~MainWindow() {
     KillTimer(m_hwnd, IDT_TIMER);
     Shell_NotifyIconW(NIM_DELETE, &nid);
 
-    // Close the pipe (automatically disconnects client too)
-    //CloseHandle(pipe);
 #else
     killTimer(m_timer);
 #endif
-    //poll.join();
     stop_process(m_process_settings.get());
-    //stop_process(m_process_charts.get());
 
     logger.close();
 
     utils::send_json();
 }
-
-/*
-void MainWindow::loadToMemory() {
-    if (m_process_charts->state() == QProcess::Running) {
-#ifdef _WIN32
-        // This call blocks until a client process connects to the pipe
-        const BOOL result = ConnectNamedPipe(pipe, NULL);
-        if (!result) {
-            CloseHandle(pipe);  // close the pipe
-            DestroyWindow(m_hwnd);
-        }
-
-        // This call blocks until a client process reads all the data
-        const wchar_t* data   = L"{ \"a_button\": 89, \"ctrl_button\": 72, \"d_button\": 5, \"e_button\": 2, \"q_button\": 2, \"s_button\": 4, \"shift_button\": 300, \"space_button\": 20, \"w_button\": 135 }";
-        DWORD numBytesWritten = 0;
-        WriteFile(
-            pipe,                            // handle to our outbound pipe
-            data,                            // data to send
-            wcslen(data) * sizeof(wchar_t),  // length of data to send (bytes)
-            &numBytesWritten,                // will store actual amount of data sent
-            NULL                             // not using overlapped IO
-        );
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refresh_rate));
-#endif
-    }
-}*/

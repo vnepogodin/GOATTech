@@ -16,47 +16,25 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef SETTINGS_HPP
-#define SETTINGS_HPP
+#ifndef RECORDER_HPP
+#define RECORDER_HPP
 
-#include "thirdparty/json.hpp"
-#include "ui_settings.h"
+#include <string_view>
+#include <iostream>
 
-#include <QSettings>
-#include <QWidget>
-
-namespace Ui {
-class Settings;
-}
+namespace {
+}  // namespace
 
 namespace vnepogodin {
-class Settings final : public QWidget {
-    Q_OBJECT
-    Q_DISABLE_COPY(Settings)
-
+class Recorder final {
  public:
-    explicit Settings(QWidget* parent = nullptr);
-    virtual ~Settings();
+    Recorder() = default;
+    explicit Recorder(const std::string_view& device_name) {
+        std::cerr << device_name << '\n';
+    }
 
- private slots:
-    void on_cancel();
-    void on_apply();
-
-    void on_run();
-    void on_hideKeyboard();
-    void on_hideMouse();
-
-    void on_inputDevice(const QString&);
-
-    void on_lineEdit_editingFinished();
-    void on_lineEdit_2_editingFinished();
-    void on_lineEdit_3_editingFinished();
-
- private:
-    QSettings* m_settings;
-    Ui::Settings* m_ui;
-
-    nlohmann::json json;
+    virtual ~Recorder() = default;
 };
 }  // namespace vnepogodin
-#endif  // SETTINGS_HPP
+
+#endif  // RECORDER_HPP

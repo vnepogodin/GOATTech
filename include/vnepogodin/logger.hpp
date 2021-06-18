@@ -111,11 +111,11 @@ std::string_view get_process_list() {
 }  // namespace
 
 namespace vnepogodin {
-class Logger {
+class Logger final {
  public:
     Logger() {
         /* clang-format off */
-        this->j = {
+        m_json = {
             {"name", get_process_list()},
             {"timestamp", 0},
             {"keys", nlohmann::json::array()}};
@@ -129,32 +129,32 @@ class Logger {
         static constexpr std::string_view file = "/tmp/db.json";
 #endif
 
-        this->log_output.open(file.data(), std::ofstream::app);
+        m_log_output.open(file.data(), std::ofstream::app);
     }
 
     ~Logger() = default;
 
     inline auto write() -> void {
-        if (!this->j["keys"].empty()) {
-            this->j.at("name")      = get_process_list();
-            this->j.at("timestamp") = std::chrono::system_clock::to_time_t(
+        if (!m_json["keys"].empty()) {
+            m_json.at("name")      = get_process_list();
+            m_json.at("timestamp") = std::chrono::system_clock::to_time_t(
                 std::chrono::system_clock::now());
-            this->log_output << this->j << '\n';
-            this->j["keys"].clear();
+            m_log_output << m_json << '\n';
+            m_json["keys"].clear();
         }
     }
 
     inline auto add_key(const std::string_view value) -> void {
-        this->j["keys"].push_back(value);
+        m_json["keys"].push_back(value);
     }
 
     inline auto close() -> void {
-        this->log_output.close();
+        m_log_output.close();
     }
 
  private:
-    std::ofstream log_output{};
-    nlohmann::json j;
+    std::ofstream m_log_output{};
+    nlohmann::json m_json;
 };
 }  // namespace vnepogodin
 

@@ -17,117 +17,11 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "settings.hpp"
+#include "utils.hpp"
 
-#include <charconv>
-#include <iostream>
+#include <QAudioRecorder>
 
 using namespace vnepogodin;
-
-namespace vnepogodin {
-namespace utils {
-    static std::vector<std::string> fromStringList(const QStringList& string_list) {
-        const auto& len = string_list.size();
-        std::vector<std::string> keys(len);
-
-        for (int i = 0; i < len; ++i) {
-            keys[i] = string_list[i].toStdString();
-        }
-
-        return keys;
-    }
-
-    static void toObject(const QSettings* const settings, nlohmann::json& obj) {
-        for (const auto& _ : settings->childKeys()) {
-            if (!_.size()) {
-                return;
-            }
-            QVariant value        = settings->value(_);
-            const std::string key = _.toStdString();
-            switch ((QMetaType::Type)value.type()) {
-            case QMetaType::Bool:
-                obj[key] = value.toBool();
-                break;
-            case QMetaType::Int:
-                obj[key] = value.toInt();
-                break;
-            case QMetaType::Double:
-                obj[key] = value.toDouble();
-                break;
-            case QMetaType::QString:
-                obj[key] = value.toString().toStdString();
-                break;
-            case QMetaType::QStringList:
-                obj[key] = fromStringList(value.toStringList());
-                break;
-            case QMetaType::QByteArray:
-                obj[key] = QString::fromUtf8(value.toByteArray().toBase64()).toStdString();
-                break;
-            default:
-                break;
-            }
-        }
-    }
-
-    static inline int get_propervalue(const nlohmann::json& value) {
-        if (value.is_string()) {
-            const auto& str = value.get<std::string>();
-            int result      = 0;
-            std::from_chars(str.data(), str.data() + str.size(), result);
-            return result;
-        } else {
-            return value.get<int>();
-        }
-    }
-
-    static inline void fromObject(const nlohmann::json& obj, QSettings* settings) {
-        for (const auto& [key, value] : obj.items()) {
-            settings->setValue(key.c_str(), get_propervalue(value));
-        }
-    }
-
-    static inline int parse_int(const std::string_view& str) {
-        int result = 0;
-        std::from_chars(str.data(), str.data() + str.size(), result);
-        return result;
-    }
-
-    static inline std::string parse_string(const int& value) {
-        return std::to_string(value);
-    }
-
-    static inline void load_key(nlohmann::json& json, QCheckBox* box, const std::string& key) {
-        if (json.contains(key)) {
-            box->setChecked(get_propervalue(json[key]));
-            return;
-        }
-        json[key] = 0;
-        if (key == "hideMouse") {
-            json[key] = 1;
-        }
-    }
-
-    static inline void load_text(nlohmann::json& json, QLineEdit* text, const std::string& key) {
-        if (json.contains(key)) {
-            text->setText(parse_string(get_propervalue(json[key])).c_str());
-            return;
-        }
-        json[key] = 50;
-        if (key == "radius") {
-            json[key] = 20;
-        }
-    }
-    //    static inline void load_macaddress(nlohmann::json& json) {
-    //        if (json.contains("mac")) {
-    //
-    //            return;
-    //        }
-    //        json[key] = 0;
-    //        if (key == "hideMouse") {
-    //            json[key] = 1;
-    //        }
-    //    }
-}  // namespace utils
-}  // namespace vnepogodin
 
 Settings::Settings(QWidget* parent)
   : QWidget(parent),
@@ -136,20 +30,30 @@ Settings::Settings(QWidget* parent)
     QSettings::setDefaultFormat(QSettings::NativeFormat);
 
     m_ui->setupUi(this);
+
+    // get audio devices
+    QAudioRecorder audioRecorder;
+    const auto& input_list = audioRecorder.audioInputs();
+    std::for_each(input_list.cbegin(), input_list.cend(), [&](const auto& device) {
+        m_ui->inputDevice->addItem(device, QVariant(device));
+    });
+
     connect(m_ui->cancel, SIGNAL(clicked()), this, SLOT(on_cancel()));
     connect(m_ui->ok, SIGNAL(clicked()), this, SLOT(on_apply()));
 
     connect(m_ui->isRun, SIGNAL(clicked()), this, SLOT(on_run()));
     connect(m_ui->hideKeyboard, SIGNAL(clicked()), this, SLOT(on_hideKeyboard()));
     connect(m_ui->hideMouse, SIGNAL(clicked()), this, SLOT(on_hideMouse()));
+    connect(m_ui->inputDevice, SIGNAL(activated(QString)), this, SLOT(on_inputDevice(QString)));
 
     utils::toObject(m_settings, json);
     utils::load_key(json, m_ui->isRun, "isRun");
     utils::load_key(json, m_ui->hideKeyboard, "hideKeyboard");
     utils::load_key(json, m_ui->hideMouse, "hideMouse");
-    utils::load_text(json, m_ui->lineEdit, "radius");
-    utils::load_text(json, m_ui->lineEdit_2, "centerX");
-    utils::load_text(json, m_ui->lineEdit_3, "centerY");
+    utils::load_key(json, m_ui->lineEdit, "radius");
+    utils::load_key(json, m_ui->lineEdit_2, "centerX");
+    utils::load_key(json, m_ui->lineEdit_3, "centerY");
+    utils::load_key(json, m_ui->inputDevice, "inputDevice");
 
     // set window size
     this->resize(size().width() * 0.8, size().height() * 0.7);
@@ -171,7 +75,8 @@ void Settings::on_lineEdit_2_editingFinished() {
 }
 
 void Settings::on_lineEdit_editingFinished() {
-    json["radius"] = m_ui->lineEdit->text().toStdString();
+    const auto& value = utils::parse_int(m_ui->lineEdit->text().toStdString());
+    json["radius"]    = value;
 }
 
 void Settings::on_cancel() {
@@ -193,4 +98,8 @@ void Settings::on_hideKeyboard() {
 
 void Settings::on_hideMouse() {
     json["hideMouse"] = m_ui->hideMouse->isChecked();
+}
+
+void Settings::on_inputDevice(const QString& text) {
+    json["inputDevice"] = text.toStdString();
 }
