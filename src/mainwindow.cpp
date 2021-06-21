@@ -403,7 +403,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     const auto& rec         = QApplication::desktop()->geometry();
     const auto& window_size = this->size();
-    move(0, 0);
+    move(0, rec.height() - window_size.height());
 
 
     // Tray icon menu
