@@ -467,6 +467,7 @@ MainWindow::MainWindow(QWidget* parent)
     utils::load_key(json, m_ui->mouse, "hideMouse");
 
     m_recorder = std::make_unique<vnepogodin::Recorder>(json["inputDevice"].get<std::string>());
+    m_recorder->record();
 
     m_activated[0] = (m_ui->keyboard->isHidden()) ? 2 : 0;
     m_activated[1] = (m_ui->mouse->isHidden()) ? 2 : 0;
@@ -485,6 +486,7 @@ MainWindow::~MainWindow() {
     stop_process(m_process_settings.get());
 
     logger.close();
+    m_recorder->stop();
 
     utils::send_json();
 }

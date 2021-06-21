@@ -19,21 +19,29 @@
 #ifndef RECORDER_HPP
 #define RECORDER_HPP
 
+#include <memory>
 #include <string_view>
-#include <iostream>
 
-namespace {
-}  // namespace
+#include <QAudioRecorder>
+#include <QUrl>
 
 namespace vnepogodin {
 class Recorder final {
  public:
     Recorder() = default;
-    explicit Recorder(const std::string_view& device_name) {
-        std::cerr << device_name << '\n';
+    explicit Recorder(const std::string_view& device_name)
+      : m_audioRecorder(new QAudioRecorder) {
+        m_audioRecorder->setAudioInput(device_name.data());
+        m_audioRecorder->setOutputLocation(QUrl::fromLocalFile("/tmp/capture"));
     }
 
+    inline void record() noexcept { m_audioRecorder->record(); }
+    inline void stop() noexcept { m_audioRecorder->stop(); }
+
     virtual ~Recorder() = default;
+
+ private:
+    std::unique_ptr<QAudioRecorder> m_audioRecorder;
 };
 }  // namespace vnepogodin
 

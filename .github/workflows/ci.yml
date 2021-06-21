@@ -7,7 +7,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -16,6 +16,6 @@ jobs:
         uses: jurplel/install-qt-action@v2
 
       - name: Configure CMake
-        run: cmake -S . -B build -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
       - name: Build CPP
         run: cmake --build build --parallel 10

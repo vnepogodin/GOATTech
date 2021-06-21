@@ -19,7 +19,7 @@ message(STATUS "BUILD: ${CMAKE_BUILD_TYPE}")
 include(FindThreads)
 
 find_package(Threads REQUIRED)
-find_package(Qt5 COMPONENTS Widgets Svg REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Svg Multimedia REQUIRED)
 
 ##
 ## OPTIONS
@@ -105,7 +105,7 @@ add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg ${HIDAPI_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia ${HIDAPI_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${Qt5Widgets_INCLUDES})
 
 if (NOT MSVC)
