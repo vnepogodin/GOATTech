@@ -19,11 +19,18 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <vnepogodin/overlay.h>
+#include <vnepogodin/overlay_mouse.h>
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
+#include <charconv>
+#include <exception>
 #include <string_view>
 #include <unordered_map>
+
+#include <vnepogodin/thirdparty/json.hpp>
 
 namespace vnepogodin {
 namespace utils {
@@ -64,6 +71,39 @@ namespace utils {
 
     inline int round(const double& val) {
         return (val < 0) ? static_cast<int>(std::ceil(val - 0.5)) : static_cast<int>(std::floor(val + 0.5));
+    }
+
+    static inline int parse_int(const std::string_view& str) {
+        int result = 0;
+        std::from_chars(str.data(), str.data() + str.size(), result);
+        return result;
+    }
+
+    static inline int get_propervalue(const nlohmann::json& value) {
+        if (value.is_string()) {
+            const auto& str = value.get<std::string>();
+            return parse_int(str);
+        }
+        return value.get<int>();
+    }
+
+    template <class T>
+    inline void load_key(nlohmann::json& json, T* object, const std::string& key) {
+        constexpr bool is_valid = std::is_same<T, Overlay>::value || std::is_same<T, Overlay_mouse>::value;
+        if (json.contains(key)) {
+            if constexpr (is_valid) {
+                object->setVisible(!get_propervalue(json[key]));
+                return;
+            }
+            throw std::runtime_error("Unknown type");
+        }
+
+        if constexpr (is_valid) {
+            if constexpr (std::is_same<T, Overlay>::value)
+                object->setVisible(0);
+            return;
+        }
+        throw std::runtime_error("Unknown type");
     }
 
     inline std::uint32_t get_key() {

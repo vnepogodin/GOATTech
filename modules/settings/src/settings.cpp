@@ -50,9 +50,6 @@ Settings::Settings(QWidget* parent)
     utils::load_key(json, m_ui->isRun, "isRun");
     utils::load_key(json, m_ui->hideKeyboard, "hideKeyboard");
     utils::load_key(json, m_ui->hideMouse, "hideMouse");
-    utils::load_key(json, m_ui->lineEdit, "radius");
-    utils::load_key(json, m_ui->lineEdit_2, "centerX");
-    utils::load_key(json, m_ui->lineEdit_3, "centerY");
     utils::load_key(json, m_ui->inputDevice, "inputDevice");
 
     // set window size
@@ -62,21 +59,6 @@ Settings::Settings(QWidget* parent)
 Settings::~Settings() {
     delete m_settings;
     delete m_ui;
-}
-
-void Settings::on_lineEdit_3_editingFinished() {
-    const auto& value = utils::parse_int(m_ui->lineEdit_3->text().toStdString());
-    json["centerY"]   = value;
-}
-
-void Settings::on_lineEdit_2_editingFinished() {
-    const auto& value = utils::parse_int(m_ui->lineEdit_2->text().toStdString());
-    json["centerX"]   = value;
-}
-
-void Settings::on_lineEdit_editingFinished() {
-    const auto& value = utils::parse_int(m_ui->lineEdit->text().toStdString());
-    json["radius"]    = value;
 }
 
 void Settings::on_cancel() {

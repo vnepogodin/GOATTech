@@ -38,6 +38,14 @@ class Recorder final {
     inline void record() noexcept { m_audioRecorder->record(); }
     inline void stop() noexcept { m_audioRecorder->stop(); }
 
+    inline void toggle() noexcept {
+        if (m_audioRecorder->state() == QMediaRecorder::StoppedState) {
+            this->record();
+            return;
+        }
+       this->stop();
+    }
+
     virtual ~Recorder() = default;
 
  private:

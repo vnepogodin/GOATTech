@@ -56,6 +56,7 @@ endif()
 ##
 set(GUI_TYPE WIN32)
 add_executable(${PROJECT_NAME} ${GUI_TYPE}
+    src/utils.hpp
     src/settings.hpp src/settings.cpp
     src/settings.ui
 

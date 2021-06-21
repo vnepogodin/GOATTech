@@ -28,7 +28,7 @@ cmake --build build --config Release
 
 ## Usage
 
-Overlay can be hidden by clicking tray once except "eye-tracker" overlay.
+Overlay can be hidden by clicking tray once.
 Settings can be opened in tray by clicking first line. And second line to exit application.
 
 ## Contributing

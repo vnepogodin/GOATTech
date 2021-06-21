@@ -48,10 +48,6 @@ class Settings final : public QWidget {
 
     void on_inputDevice(const QString&);
 
-    void on_lineEdit_editingFinished();
-    void on_lineEdit_2_editingFinished();
-    void on_lineEdit_3_editingFinished();
-
  private:
     QSettings* m_settings;
     Ui::Settings* m_ui;

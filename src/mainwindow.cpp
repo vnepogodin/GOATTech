@@ -23,7 +23,6 @@
 #include <vnepogodin/mainwindow.h>
 #include <vnepogodin/utils.hpp>
 
-#include <charconv>
 #include <chrono>
 #include <iostream>
 #include <sstream>
@@ -55,7 +54,6 @@ static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
 // or you will get problems since every function uses this variable.
 static HHOOK _hook_keyboard = nullptr;
 static HHOOK _hook_mouse    = nullptr;
-//static HANDLE pipe          = nullptr;
 static NOTIFYICONDATAW nid;
 static constexpr auto ID_SETTINGS = 2000;
 static constexpr auto ID_EXIT     = 2001;
@@ -266,7 +264,6 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
 static void stop_process(QProcess* proc) {
     if (proc->state() == QProcess::Running) {
         proc->terminate();
-        proc->waitForFinished();
         if (!proc->waitForFinished()) {
             std::cerr << "Process failed to terminate\n";
         }
@@ -275,17 +272,6 @@ static void stop_process(QProcess* proc) {
 
 namespace vnepogodin {
 namespace utils {
-    static std::vector<std::string> fromStringList(const QStringList& string_list) {
-        const auto& len = string_list.size();
-        std::vector<std::string> keys(len);
-
-        for (int i = 0; i < len; ++i) {
-            keys[i] = string_list[i].toStdString();
-        }
-
-        return keys;
-    }
-
     static void toObject(const QSettings* const settings, nlohmann::json& obj) {
         for (const auto& _ : settings->childKeys()) {
             if (!_.size()) {
@@ -300,33 +286,14 @@ namespace utils {
             case QMetaType::Int:
                 obj[key] = value.toInt();
                 break;
-            case QMetaType::Double:
-                obj[key] = value.toDouble();
-                break;
             case QMetaType::QString:
                 obj[key] = value.toString().toStdString();
-                break;
-            case QMetaType::QStringList:
-                obj[key] = fromStringList(value.toStringList());
                 break;
             case QMetaType::QByteArray:
                 obj[key] = QString::fromUtf8(value.toByteArray().toBase64()).toStdString();
                 break;
             default:
                 break;
-            }
-        }
-    }
-
-    static inline void load_key(nlohmann::json& json, QWidget* obj, const std::string& key) {
-        if (json.contains(key)) {
-            if (json[key].is_string()) {
-                const auto& value = json[key].get<std::string>();
-                int result        = 0;
-                std::from_chars(value.data(), value.data() + value.size(), result);
-                obj->setVisible(!result);
-            } else {
-                obj->setVisible(!json[key].get<int>());
             }
         }
     }
@@ -436,7 +403,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     const auto& rec         = QApplication::desktop()->geometry();
     const auto& window_size = this->size();
-    move(-(rec.width() - window_size.width() - 900), rec.height() - window_size.height() + 100);
+    move(0, 0);
+
 
     // Tray icon menu
     createMenu();
@@ -457,7 +425,6 @@ MainWindow::MainWindow(QWidget* parent)
     const int& size = qMin(this->size().height(), this->size().width()) - 300;
     m_ui->keyboard->setFixedSize(size, size);
     m_ui->mouse->setFixedSize(size - 150, size - 150);
-    m_ui->eye->setFixedSize(size - 100, size - 100);
 
     QSettings settings(QSettings::UserScope);
     QSettings::setDefaultFormat(QSettings::NativeFormat);
@@ -466,8 +433,10 @@ MainWindow::MainWindow(QWidget* parent)
     utils::load_key(json, m_ui->keyboard, "hideKeyboard");
     utils::load_key(json, m_ui->mouse, "hideMouse");
 
-    m_recorder = std::make_unique<vnepogodin::Recorder>(json["inputDevice"].get<std::string>());
-    m_recorder->record();
+    if (json.contains("inputDevice")) {
+        m_recorder = std::make_unique<vnepogodin::Recorder>(json["inputDevice"].get<std::string>());
+        m_recorder->record();
+    }
 
     m_activated[0] = (m_ui->keyboard->isHidden()) ? 2 : 0;
     m_activated[1] = (m_ui->mouse->isHidden()) ? 2 : 0;
@@ -486,7 +455,7 @@ MainWindow::~MainWindow() {
     stop_process(m_process_settings.get());
 
     logger.close();
-    m_recorder->stop();
+    m_recorder->toggle();
 
     utils::send_json();
 }

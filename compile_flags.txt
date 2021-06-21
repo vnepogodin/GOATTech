@@ -1,3 +1,4 @@
+-std=gnu++2a
 -DQT_WIDGETS_LIB
 -I/usr/include/qt/QtWidgets
 -I/usr/include/qt
@@ -5,5 +6,8 @@
 -DQT_GUI_LIB
 -I/usr/include/qt/QtGui
 -DQT_CORE_LIB
+-I/usr/include/qt/QtMultimedia
+-DQT_MULTIMEDIA_LIB
+-Ibuild/Debug/overlay_autogen/include
 -Iinclude
 -xc++

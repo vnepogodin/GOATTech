@@ -108,9 +108,6 @@ namespace utils {
             if constexpr (std::is_same<T, QCheckBox>::value) {
                 object->setChecked(get_propervalue(json[key]));
                 return;
-            } else if constexpr (std::is_same<T, QLineEdit>::value) {
-                object->setText(std::to_string(get_propervalue(json[key])).c_str());
-                return;
             } else if constexpr (std::is_same<T, QComboBox>::value) {
                 const auto& value = json[key].get<std::string>();
 
@@ -123,10 +120,7 @@ namespace utils {
             throw std::runtime_error("Unknown type");
         }
         if constexpr (std::is_same<T, QCheckBox>::value) {
-            json[key] = static_cast<int>(key == "hideMouse");
-            return;
-        } else if constexpr (std::is_same<T, QLineEdit>::value) {
-            json[key] = (key == "radius") ? 20 : 50;
+            json[key] = static_cast<int>(key == "hideKeyboard");
             return;
         } else if constexpr (std::is_same<T, QComboBox>::value) {
             // no-op

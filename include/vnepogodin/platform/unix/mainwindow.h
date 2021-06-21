@@ -27,6 +27,8 @@
 #include <QMainWindow>
 #include <QProcess>
 #include <QSystemTrayIcon>
+#include <QAction>
+#include <QMenu>
 
 namespace vnepogodin {
 class MainWindow final : public QMainWindow {
