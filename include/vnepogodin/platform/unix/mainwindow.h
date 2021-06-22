@@ -24,11 +24,11 @@
 
 #include <memory>
 
+#include <QAction>
 #include <QMainWindow>
+#include <QMenu>
 #include <QProcess>
 #include <QSystemTrayIcon>
-#include <QAction>
-#include <QMenu>
 
 namespace vnepogodin {
 class MainWindow final : public QMainWindow {
