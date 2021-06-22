@@ -401,10 +401,15 @@ MainWindow::MainWindow(QWidget* parent)
     m_timer = startTimer(100);
     setMouseTracking(true);
 
+    // Set window position
     const auto& rec         = QApplication::desktop()->geometry();
     const auto& window_size = this->size();
     move(0, rec.height() - window_size.height());
 
+    // Calculate overlay percentage of the window
+    static constexpr auto perc_of_window = 18 / 100;
+    const auto& perc_height              = rec.height() * perc_of_window;
+    const auto& perc_width               = rec.width() * perc_of_window;
 
     // Tray icon menu
     createMenu();
@@ -422,9 +427,10 @@ MainWindow::MainWindow(QWidget* parent)
     // Interaction
     connect(m_trayIcon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
 #endif
-    const int& size = qMin(this->size().height(), this->size().width()) - 300;
+    const int& size = qMin(perc_height, perc_width);
+
     m_ui->keyboard->setFixedSize(size, size);
-    m_ui->mouse->setFixedSize(size - 150, size - 150);
+    m_ui->mouse->setFixedSize(size, size);
 
     QSettings settings(QSettings::UserScope);
     QSettings::setDefaultFormat(QSettings::NativeFormat);

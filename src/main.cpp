@@ -22,7 +22,7 @@
 
 #ifndef _WIN32
 #include <QSharedMemory>
-bool IsInstanceAlreadyRunning(QSharedMemory &memoryLock) {
+bool IsInstanceAlreadyRunning(QSharedMemory& memoryLock) {
     if (!memoryLock.create(1)) {
         memoryLock.attach();
         memoryLock.detach();
@@ -35,7 +35,6 @@ bool IsInstanceAlreadyRunning(QSharedMemory &memoryLock) {
     return false;
 }
 #endif
-
 
 auto main(int argc, char** argv) -> std::int32_t {
 #ifdef _WIN32

@@ -43,7 +43,7 @@ class Recorder final {
             this->record();
             return;
         }
-       this->stop();
+        this->stop();
     }
 
     virtual ~Recorder() = default;
