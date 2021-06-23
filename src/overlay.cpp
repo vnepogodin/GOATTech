@@ -19,9 +19,6 @@
 #include <vnepogodin/overlay.h>
 #include <vnepogodin/utils.hpp>
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <array>
 #include <cmath>
 #include <fstream>

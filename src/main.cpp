@@ -16,12 +16,11 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <vnepogodin/mainwindow.h>
+#include <vnepogodin/mainwindow.hpp>
 
 #include <QApplication>
-
-#ifndef _WIN32
 #include <QSharedMemory>
+
 bool IsInstanceAlreadyRunning(QSharedMemory& memoryLock) {
     if (!memoryLock.create(1)) {
         memoryLock.attach();
@@ -34,19 +33,11 @@ bool IsInstanceAlreadyRunning(QSharedMemory& memoryLock) {
 
     return false;
 }
-#endif
 
 auto main(int argc, char** argv) -> std::int32_t {
-#ifdef _WIN32
-    static constexpr auto NAME = L"overlay";
-    HANDLE mutex               = CreateMutexW(NULL, TRUE, NAME);
-    if ((mutex == nullptr) || (GetLastError() == ERROR_ALREADY_EXISTS))
-        return 0;
-#else
     QSharedMemory sharedMemoryLock("GOATTech-lock");
     if (IsInstanceAlreadyRunning(sharedMemoryLock))
         return -1;
-#endif
 
     // Set application info
     QCoreApplication::setOrganizationName("torrenttor");

@@ -19,9 +19,6 @@
 #include <vnepogodin/overlay_mouse.h>
 #include <vnepogodin/utils.hpp>
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <array>
 #include <cmath>
 #include <fstream>
@@ -174,7 +171,7 @@ void OverlayMouse::paintTouch(QPaintDevice* device, QPoint corner, double scale)
     QPoint tl{50, 50};
     float height = 139, width = 139;
 
-#ifdef _WIN32
+#if 0
     POINT ptOld;
     GetCursorPos(&ptOld);
 

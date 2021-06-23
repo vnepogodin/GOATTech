@@ -19,57 +19,17 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#ifdef _WIN32
-#include <Windows.h>
-#include <tlhelp32.h>  // PROCESSENTRY32W, CreateToolhelp32Snapshot, Process32FirstW, Process32NextW
-#else
 #include <cstring>
 #include <dirent.h>
-#include <vector>
-#endif
+
 #include <chrono>
 #include <fstream>
+#include <vector>
 
 #include <vnepogodin/thirdparty/json.hpp>
 
 namespace {
 std::string_view get_process_list() {
-#ifdef _WIN32
-    // Take a snapshot of all processes in the system.
-    HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-    // Set the size of the structure before using it.
-    PROCESSENTRY32W pe32{};
-    pe32.dwSize = sizeof(PROCESSENTRY32W);
-
-    // Retrieve information about the first process,
-    // and exit if unsuccessful
-    if (!Process32FirstW(hProcessSnap, &pe32)) {
-        CloseHandle(hProcessSnap);  // clean the snapshot object
-        return "Unknown process";
-    }
-
-    // Now walk the snapshot of processes, and
-    // display information about each process in turn
-    const std::unordered_map<std::string_view, std::string_view> process_map = {
-        {"dota.exe", "Dota"},
-        {"csgo.exe", "Counter-Strike: Global Offensive"},
-        {"lol.exe", "League of Legends"},
-        {"fortnite.exe", "Fortnite"}};
-    do {
-        std::wstring wide = pe32.szExeFile;
-        std::string exe(wide.begin(), wide.end());
-        for (const auto& [process, name] : process_map) {
-            if (process == exe) {
-                CloseHandle(hProcessSnap);
-                return name;
-            }
-        }
-    } while (Process32NextW(hProcessSnap, &pe32));
-
-    CloseHandle(hProcessSnap);
-
-#else
     DIR* dir_proc = opendir("/proc/");
     if (dir_proc == NULL) {
         return "Unknown process";
@@ -105,8 +65,8 @@ std::string_view get_process_list() {
             }
         }
     } while ((dir_entity = readdir(dir_proc)));
+
     closedir(dir_proc);
-#endif
     return "Unknown process";
 }
 }  // namespace
@@ -122,18 +82,11 @@ class Logger final {
             {"keys", nlohmann::json::array()}};
         /* clang-format on */
 
-#ifdef _WIN32
-        char buf[100]{};
-        GetTempPathA(85, buf);
-        const std::string file = std::string(buf) + "db.json";
-#else
         static constexpr std::string_view file = "/tmp/db.json";
-#endif
-
         m_log_output.open(file.data(), std::ofstream::app);
     }
 
-    ~Logger() = default;
+    virtual ~Logger() = default;
 
     inline auto write() -> void {
         if (!m_json["keys"].empty()) {

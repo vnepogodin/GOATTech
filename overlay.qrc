@@ -1,10 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>assets/dualshock_black/base.svg</file>
-        <file>assets/dualshock_black/touchpad.svg</file>
-        <file>assets/dualshock_black/cursor.svg</file>
-        <file>assets/dualshock_black/cursor2.svg</file>
-        <file>assets/dualshock_black/disconnected.svg</file>
         <file>assets/keyboard/base.svg</file>
         <file>assets/keyboard/w_button.svg</file>
         <file>assets/keyboard/a_button.svg</file>
@@ -22,8 +17,5 @@
         <file>assets/mouse/right_button.svg</file>
         <file>assets/mouse/middle_button.svg</file>
         <file>assets/mouse/x_button.svg</file>
-        <file>assets/eye/base.svg</file>
-        <file>assets/eye/green.svg</file>
-        <file>assets/eye/red.svg</file>
     </qresource>
 </RCC>

@@ -22,9 +22,6 @@
 #include <vnepogodin/overlay.h>
 #include <vnepogodin/overlay_mouse.h>
 
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 #include <charconv>
 #include <exception>
 #include <string_view>
@@ -107,13 +104,8 @@ namespace utils {
     }
 
     inline std::uint32_t get_key() noexcept {
-        for (const auto& code : code_list) {
-#ifdef _WIN32
-            if (GetAsyncKeyState(code.first)) {
-                return code.first;
-            }
-#endif
-        }
+        //for (const auto& code : code_list) {
+        //}
         return key_code::UNDEFINED;
     }
 };  // namespace utils

@@ -36,7 +36,7 @@ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
-if(UNIX AND CMAKE_GENERATOR STREQUAL "Ninja")
+if(CMAKE_GENERATOR STREQUAL "Ninja")
   if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-fcolor-diagnostics ${CMAKE_CXX_FLAGS}")
     set(CMAKE_C_FLAGS "-fcolor-diagnostics ${CMAKE_C_FLAGS}")
@@ -47,18 +47,8 @@ if(UNIX AND CMAKE_GENERATOR STREQUAL "Ninja")
   endif()
 endif()
 
-if(MSVC)
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /arch:AVX2 /fp:precise /D_NDEBUG")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DEBUG /Od")
-else()
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -flto -D_NDEBUG")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
-endif()
-
-if(MSVC)
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /LTCG:INCREMENTAL")
-#   find_library(HIDAPI_LIBRARY NAMES hidapi hidapi.dll PATHS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/hidapi)
-endif()
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -flto -D_NDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
 
 #add_subdirectory(thirdparty/JoyShockLibrary)
 
@@ -72,17 +62,10 @@ add_subdirectory(modules/settings)
 #endif()
 #add_subdirectory(modules/webui)
 
-if(MSVC)
-set(PLATFORM_SPECIFIC_PATH "include/vnepogodin/platform/windows")
-else()
-set(PLATFORM_SPECIFIC_PATH "include/vnepogodin/platform/unix")
-endif()
-
 ##
 ## Target
 ##
-set(GUI_TYPE WIN32)
-add_executable(${PROJECT_NAME} ${GUI_TYPE}
+add_executable(${PROJECT_NAME}
     include/vnepogodin/recorder.hpp
     include/vnepogodin/logger.hpp
     include/vnepogodin/utils.hpp
@@ -90,8 +73,7 @@ add_executable(${PROJECT_NAME} ${GUI_TYPE}
     include/vnepogodin/overlay.h src/overlay.cpp
     include/vnepogodin/overlay_mouse.h src/overlay_mouse.cpp
     forms/mainwindow.ui
-    ${PLATFORM_SPECIFIC_PATH}/mainwindow.h
-    include/vnepogodin/mainwindow.h src/mainwindow.cpp
+    include/vnepogodin/mainwindow.hpp src/mainwindow.cpp
     forms/overlay.ui forms/overlay_mouse.ui
 
     src/main.cpp overlay.qrc
@@ -104,11 +86,9 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia ${HIDAPI_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${Qt5Widgets_INCLUDES})
 
-if (NOT MSVC)
 add_custom_target(run
     COMMAND ./${PROJECT_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_target(run-settings
     COMMAND ./GOATTech-settings
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/settings)
-endif()

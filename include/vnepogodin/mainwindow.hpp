@@ -16,8 +16,8 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef UNIX_MAINWINDOW_H_
-#define UNIX_MAINWINDOW_H_
+#ifndef MAINWINDOW_HPP_
+#define MAINWINDOW_HPP_
 
 #include <ui_mainwindow.h>
 #include <vnepogodin/recorder.hpp>
@@ -63,4 +63,4 @@ class MainWindow final : public QMainWindow {
 };
 }  // namespace vnepogodin
 
-#endif  // UNIX_MAINWINDOW_H_
+#endif  // MAINWINDOW_HPP_

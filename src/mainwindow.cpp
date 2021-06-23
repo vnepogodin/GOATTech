@@ -16,11 +16,9 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-/* clang-format off */
-#include <vnepogodin/thirdparty/HTTPRequest.hpp>
-/* clang-format on */
 #include <vnepogodin/logger.hpp>
-#include <vnepogodin/mainwindow.h>
+#include <vnepogodin/mainwindow.hpp>
+#include <vnepogodin/thirdparty/HTTPRequest.hpp>
 #include <vnepogodin/utils.hpp>
 
 #include <chrono>
@@ -29,6 +27,7 @@
 
 #include <QDesktopWidget>
 #include <QFile>
+#include <QKeyEvent>
 #include <QSettings>
 #include <QTextStream>
 
@@ -46,154 +45,6 @@ static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
     return utils::key_code::UNDEFINED;
 }
 
-#ifdef _WIN32
-#include <iphlpapi.h>
-#pragma comment(lib, "iphlpapi.lib")
-#pragma comment(lib, "Ws2_32.lib")
-
-// variable to store the HANDLE to the hook. Don't declare it anywhere else then globally
-// or you will get problems since every function uses this variable.
-static HHOOK _hook_keyboard = nullptr;
-static HHOOK _hook_mouse    = nullptr;
-static NOTIFYICONDATAW nid;
-static constexpr auto ID_SETTINGS = 2000;
-static constexpr auto ID_EXIT     = 2001;
-
-// This is the callback function. Consider it the event that is raised when, in this case,
-// a key is pressed.
-static LRESULT __stdcall HookCallbackKeyboard(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode >= 0) {
-        // the action is valid: HC_ACTION.
-        if (wParam == WM_KEYDOWN) {
-            // lParam is the pointer to the struct containing the data needed, so cast and assign it to kdbStruct.
-            const KBDLLHOOKSTRUCT kbdStruct = *((KBDLLHOOKSTRUCT*)lParam);
-            handle_key(kbdStruct.vkCode);
-        }
-    }
-
-    // call the next hook in the hook chain. This is necessary or your hook chain will break and the hook stops
-    return CallNextHookEx(_hook_keyboard, nCode, wParam, lParam);
-}
-static LRESULT __stdcall HookCallbackMouse(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode >= 0) {
-        // the action is valid: HC_ACTION.
-        switch (wParam) {
-        case WM_LBUTTONDOWN:
-            handle_key(vnepogodin::utils::key_code::LBUTTON);
-            break;
-        case WM_RBUTTONDOWN:
-            handle_key(vnepogodin::utils::key_code::RBUTTON);
-            break;
-        case WM_MBUTTONDOWN:
-            handle_key(vnepogodin::utils::key_code::MBUTTON);
-            break;
-        case WM_XBUTTONDOWN:
-            handle_key((*((tagMSLLHOOKSTRUCT*)lParam)).mouseData);
-            break;
-        }
-    }
-
-    // call the next hook in the hook chain. This is necessary or your hook chain will break and the hook stops
-    return CallNextHookEx(_hook_mouse, nCode, wParam, lParam);
-}
-
-static inline void SetHook() {
-    static constexpr auto type = L"Error";
-    // WH_KEYBOARD_LL means it will set a low level keyboard hook. More information about it at MSDN.
-    if (!(_hook_keyboard = SetWindowsHookExW(WH_KEYBOARD_LL, HookCallbackKeyboard, NULL, 0))) {
-        static constexpr auto a = L"Failed to install keyboard hook!";
-        MessageBoxW(NULL, a, type, MB_ICONERROR);
-    }
-    // WH_MOUSE_LL means it will set a low level mouse hook. More information about it at MSDN.
-    if (!(_hook_mouse = SetWindowsHookExW(WH_MOUSE_LL, HookCallbackMouse, NULL, 0))) {
-        static constexpr auto a = L"Failed to install mouse hook!";
-        MessageBoxW(NULL, a, type, MB_ICONERROR);
-    }
-}
-
-static void ShowPopupMenu(HWND hWnd, POINT* curpos, int wDefaultItem) {
-    HMENU hPop = CreatePopupMenu();
-
-    InsertMenuW(hPop, 0, MF_BYPOSITION | MF_STRING, ID_SETTINGS, L"Settings");
-    InsertMenuW(hPop, 1, MF_BYPOSITION | MF_STRING, ID_EXIT, L"Exit");
-
-    SetMenuDefaultItem(hPop, ID_SETTINGS, FALSE);
-    SetFocus(hWnd);
-    SendMessageW(hWnd, WM_INITMENUPOPUP, (WPARAM)hPop, 0);
-
-    POINT pt;
-    if (!curpos) {
-        GetCursorPos(&pt);
-
-        curpos = &pt;
-    }
-
-    WORD cmd = TrackPopupMenu(
-        hPop, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY,
-        curpos->x, curpos->y, 0, hWnd, NULL);
-
-    SendMessageW(hWnd, WM_COMMAND, cmd, 0);
-    DestroyMenu(hPop);
-}
-
-bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* result) {
-    Q_UNUSED(eventType)
-    Q_UNUSED(result)
-    // Transform the message pointer to the MSG WinAPI
-    MSG* msg = static_cast<MSG*>(message);
-
-    switch (msg->message) {
-    case WM_TIMER:
-        logger.write();
-        break;
-    case WM_COMMAND:
-        switch (LOWORD(msg->wParam)) {
-        case ID_SETTINGS:
-            if (m_process_settings->state() == QProcess::NotRunning) {
-                m_process_settings->open();
-            }
-            break;
-
-        case ID_EXIT:
-            PostMessage(m_hwnd, WM_CLOSE, 0, 0);
-            break;
-        }
-        break;
-    case IDT_TRAY:
-        switch (msg->lParam) {
-        case WM_LBUTTONUP:
-            if (m_activated[0] != 2) {
-                m_ui->keyboard->setVisible(m_activated[0]);
-                m_activated[0] = !m_activated[0];
-            }
-            if (m_activated[1] != 2) {
-                m_ui->mouse->setVisible(m_activated[1]);
-                m_activated[1] = !m_activated[1];
-            }
-            break;
-        case WM_RBUTTONUP:
-            SetForegroundWindow(m_hwnd);
-            ShowPopupMenu(m_hwnd, NULL, -1);
-            PostMessageW(m_hwnd, IDT_TRAY + 1, 0, 0);
-            break;
-        }
-        break;
-    case WM_CLOSE:
-        DestroyWindow(m_hwnd);
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(m_hwnd, msg->message, msg->wParam, msg->lParam);
-    }
-
-    return false;
-}
-
-#else
-
-#include <QKeyEvent>
 /* Qt just uses the QWidget* parent as transient parent for native
  * platform dialogs. This makes it impossible to make them transient
  * to a bare QWindow*. So we catch the show event for the QDialog
@@ -259,8 +110,6 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
     }
 }
 
-#endif
-
 static void stop_process(QProcess* proc) {
     if (proc->state() == QProcess::Running) {
         proc->terminate();
@@ -303,57 +152,6 @@ namespace utils {
         http::Request request(URL);
 
         nlohmann::json json{{"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())}};
-#ifdef _WIN32
-        static constexpr auto WORKING_BUFFER_SIZE = 15000;
-        static constexpr auto MAX_TRIES           = 3;
-        DWORD dwRetVal                            = 0;
-
-        PIP_ADAPTER_ADDRESSES pAddresses = NULL;
-
-        ULONG Iterations = 0;
-
-        // Allocate a 15 KB buffer to start with.
-        ULONG outBufLen = WORKING_BUFFER_SIZE;
-
-        do {
-            pAddresses = new IP_ADAPTER_ADDRESSES[outBufLen];
-            if (pAddresses == NULL) {
-                exit(1);
-            }
-
-            dwRetVal = GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_PREFIX, NULL,
-                pAddresses, &outBufLen);
-
-            if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
-                delete[] pAddresses;
-                pAddresses = nullptr;
-            } else {
-                break;
-            }
-
-            Iterations++;
-
-        } while ((dwRetVal == ERROR_BUFFER_OVERFLOW) && (Iterations < MAX_TRIES));
-        const auto& pCurrAddresses = pAddresses;
-        std::stringstream ss;
-        if (pCurrAddresses) {
-            if (pCurrAddresses->PhysicalAddressLength != 0) {
-                for (int i = 0; i < (int)pCurrAddresses->PhysicalAddressLength; ++i) {
-                    if (i == (pCurrAddresses->PhysicalAddressLength - 1)) {
-                        ss << std::hex << ((int)pCurrAddresses->PhysicalAddress[i]);
-                    } else {
-                        ss << std::hex << ((int)pCurrAddresses->PhysicalAddress[i]) << "-";
-                    }
-                }
-            }
-        }
-
-        json["mac"] = ss.str();
-
-        if (pAddresses) {
-            delete[] pAddresses;
-        }
-#endif
         [[maybe_unused]] const auto& response = request.send("POST", json.dump(),
             {"Content-Type: application/json"});
     }
@@ -368,42 +166,7 @@ MainWindow::MainWindow(QWidget* parent)
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
-#ifdef _WIN32
-    m_process_settings->setProgram("GOATTech-settings.exe");
-    m_hwnd = (HWND)winId();
-    SetForegroundWindow(m_hwnd);
-    SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-    SetTimer(m_hwnd,  // handle to main window
-        IDT_TIMER,    // timer identifier
-        100,          // 100ms interval
-        (TIMERPROC)NULL);
-
-    SetHook();
-
-    nid.hWnd = m_hwnd;
-
-    nid.uID = 1;
-
-    nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-
-    nid.uCallbackMessage = IDT_TRAY;
-
-    ExtractIconExW(L"icon.ico", 0, NULL, &(nid.hIcon), 1);
-
-    wcscpy_s(nid.szTip, L"GOATTech");
-
-    Shell_NotifyIconW(NIM_ADD, &nid);
-
-    // Get screen property
-    const auto& rec = QApplication::desktop()->geometry();
-
-    // Calculate overlay percentage of the window
-    static constexpr float perc_of_window = 0.2F;
-    const auto& perc_height               = rec.height() * perc_of_window;
-    const auto& perc_width                = rec.width() * perc_of_window;
-#else
     m_tray_icon = std::make_unique<QSystemTrayIcon>(this);
     m_process_settings->setProgram("GOATTech-settings");
     m_timer = startTimer(100);
@@ -434,7 +197,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Interaction
     connect(m_tray_icon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-#endif
+
+    // Set proper widget size
     const int& size = qMin(perc_height, perc_width);
 
     m_ui->keyboard->setFixedSize(size, size);
@@ -457,15 +221,7 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 MainWindow::~MainWindow() {
-#ifdef _WIN32
-    UnhookWindowsHookEx(_hook_keyboard);
-    UnhookWindowsHookEx(_hook_mouse);
-    KillTimer(m_hwnd, IDT_TIMER);
-    Shell_NotifyIconW(NIM_DELETE, &nid);
-
-#else
     killTimer(m_timer);
-#endif
     stop_process(m_process_settings.get());
 
     logger.close();
