@@ -34,7 +34,6 @@ namespace vnepogodin {
 class MainWindow final : public QMainWindow {
     Q_OBJECT
     Q_DISABLE_COPY(MainWindow)
-
  public:
     explicit MainWindow(QWidget* parent = nullptr);
     virtual ~MainWindow();
@@ -52,10 +51,10 @@ class MainWindow final : public QMainWindow {
 
     std::unique_ptr<vnepogodin::Recorder> m_recorder;
 
-    std::unique_ptr<QSystemTrayIcon> m_trayIcon;
-    std::unique_ptr<QMenu> m_trayMenu;
-    std::unique_ptr<QAction> m_quitAction;
-    std::unique_ptr<QAction> m_settingsAction;
+    std::unique_ptr<QSystemTrayIcon> m_tray_icon;
+    std::unique_ptr<QMenu> m_tray_menu;
+    std::unique_ptr<QAction> m_quit_action;
+    std::unique_ptr<QAction> m_settings_action;
 
     std::unique_ptr<QProcess> m_process_settings;
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();

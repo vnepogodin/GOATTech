@@ -27,6 +27,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <QDesktopWidget>
 #include <QFile>
 #include <QSettings>
 #include <QTextStream>
@@ -192,7 +193,6 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, long* r
 
 #else
 
-#include <QDesktopWidget>
 #include <QKeyEvent>
 /* Qt just uses the QWidget* parent as transient parent for native
  * platform dialogs. This makes it impossible to make them transient
@@ -226,20 +226,20 @@ bool MainWindow::event(QEvent* ev) {
 
 void MainWindow::createMenu() noexcept {
     // App can exit via Quit menu
-    m_quitAction = std::make_unique<QAction>("&Quit", this);
-    connect(m_quitAction.get(), &QAction::triggered, qApp, &QCoreApplication::quit);
+    m_quit_action = std::make_unique<QAction>("&Quit", this);
+    connect(m_quit_action.get(), &QAction::triggered, qApp, &QCoreApplication::quit);
 
     // Run settings
-    m_settingsAction = std::make_unique<QAction>("&Settings", this);
-    connect(m_settingsAction.get(), &QAction::triggered,
+    m_settings_action = std::make_unique<QAction>("&Settings", this);
+    connect(m_settings_action.get(), &QAction::triggered,
         [&]() {
             if (m_process_settings->state() == QProcess::NotRunning)
                 m_process_settings->open();
         });
 
-    m_trayMenu = std::make_unique<QMenu>(this);
-    m_trayMenu->addAction(m_settingsAction.get());
-    m_trayMenu->addAction(m_quitAction.get());
+    m_tray_menu = std::make_unique<QMenu>(this);
+    m_tray_menu->addAction(m_settings_action.get());
+    m_tray_menu->addAction(m_quit_action.get());
 }
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
@@ -395,8 +395,16 @@ MainWindow::MainWindow(QWidget* parent)
     wcscpy_s(nid.szTip, L"GOATTech");
 
     Shell_NotifyIconW(NIM_ADD, &nid);
+
+    // Get screen property
+    const auto& rec = QApplication::desktop()->geometry();
+
+    // Calculate overlay percentage of the window
+    static constexpr float perc_of_window = 0.18F;
+    const auto& perc_height               = rec.height() * perc_of_window;
+    const auto& perc_width                = rec.width() * perc_of_window;
 #else
-    m_trayIcon = std::make_unique<QSystemTrayIcon>(this);
+    m_tray_icon = std::make_unique<QSystemTrayIcon>(this);
     m_process_settings->setProgram("GOATTech-settings");
     m_timer = startTimer(100);
     setMouseTracking(true);
@@ -407,25 +415,25 @@ MainWindow::MainWindow(QWidget* parent)
     move(0, rec.height() - window_size.height());
 
     // Calculate overlay percentage of the window
-    static constexpr auto perc_of_window = 18 / 100;
-    const auto& perc_height              = rec.height() * perc_of_window;
-    const auto& perc_width               = rec.width() * perc_of_window;
+    static constexpr float perc_of_window = 0.18F;
+    const auto& perc_height               = rec.height() * perc_of_window;
+    const auto& perc_width                = rec.width() * perc_of_window;
 
     // Tray icon menu
     createMenu();
-    m_trayIcon->setContextMenu(m_trayMenu.get());
-    m_trayIcon->setToolTip("GOATTech");
+    m_tray_icon->setContextMenu(m_tray_menu.get());
+    m_tray_icon->setToolTip("GOATTech");
 
     // App icon
     const auto& appIcon = QIcon("icon.png");
-    m_trayIcon->setIcon(appIcon);
+    m_tray_icon->setIcon(appIcon);
     setWindowIcon(appIcon);
 
     // Displaying the tray icon
-    m_trayIcon->show();
+    m_tray_icon->show();
 
     // Interaction
-    connect(m_trayIcon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+    connect(m_tray_icon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
 #endif
     const int& size = qMin(perc_height, perc_width);
 
@@ -461,7 +469,7 @@ MainWindow::~MainWindow() {
     stop_process(m_process_settings.get());
 
     logger.close();
-    m_recorder->toggle();
+    m_recorder->stop();
 
     utils::send_json();
 }

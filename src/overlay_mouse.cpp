@@ -36,14 +36,14 @@
 
 using namespace vnepogodin;
 
-Overlay_mouse::Overlay_mouse(QWidget* parent) : QWidget(parent) {
+OverlayMouse::OverlayMouse(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
 
     setAttribute(Qt::WA_NativeWindow);
     connectMouse();
 }
 
-void Overlay_mouse::paintEvent(QPaintEvent*) {
+void OverlayMouse::paintEvent(QPaintEvent*) {
     // Initialize renderer with base asset
     QSvgRenderer renderer;
 
@@ -66,12 +66,12 @@ void Overlay_mouse::paintEvent(QPaintEvent*) {
     }
 }
 
-void Overlay_mouse::paintFeatures(QPaintDevice* device, QPoint corner, double scale) {
+void OverlayMouse::paintFeatures(QPaintDevice* device, QPoint corner, double scale) {
     paintButtons(this, corner, scale);
     //paintTouch(this, corner, scale);
 }
 
-QPoint Overlay_mouse::locateCorner(QSize defaultSize, QSize viewBox) {
+QPoint OverlayMouse::locateCorner(QSize defaultSize, QSize viewBox) {
     double defaultAR = (double)defaultSize.width() / (double)defaultSize.height();
     double viewAR    = (double)viewBox.width() / (double)viewBox.height();
 
@@ -98,7 +98,7 @@ QPoint Overlay_mouse::locateCorner(QSize defaultSize, QSize viewBox) {
     return QPoint(x, y);
 }
 
-double Overlay_mouse::getScale(QSize defaultSize, QSize viewBox) {
+double OverlayMouse::getScale(QSize defaultSize, QSize viewBox) {
     double result;
     QPoint corner = locateCorner(defaultSize, viewBox);
 
@@ -109,7 +109,7 @@ double Overlay_mouse::getScale(QSize defaultSize, QSize viewBox) {
     return result;
 }
 
-bool Overlay_mouse::connectMouse() {
+bool OverlayMouse::connectMouse() {
     // Start polling
     mouseConnected = false;
 
@@ -117,24 +117,24 @@ bool Overlay_mouse::connectMouse() {
         poll.join();
 
     mouseConnected = true;
-    poll           = std::thread(&Overlay_mouse::paintLoop, this);
+    poll           = std::thread(&OverlayMouse::paintLoop, this);
 
     return true;
 }
 
-void Overlay_mouse::paintLoop() {
+void OverlayMouse::paintLoop() {
     while (mouseConnected) {
         update();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refresh_rate));
     }
 }
 
-Overlay_mouse::~Overlay_mouse() {
+OverlayMouse::~OverlayMouse() {
     mouseConnected = false;
     poll.join();
 }
 
-void Overlay_mouse::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
+void OverlayMouse::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
     const auto& button = utils::get_key();
 
     const std::unordered_map<uint8_t, std::pair<std::string_view, QPoint>> button_map = {
@@ -152,7 +152,7 @@ void Overlay_mouse::paintButtons(QPaintDevice* device, QPoint corner, double sca
     }
 }
 
-void Overlay_mouse::paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale) {
+void OverlayMouse::paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale) {
     name = ":/assets/mouse/" + name + ".svg";
     QSvgRenderer renderer;
     renderer.load(QString(name.c_str()));
@@ -170,7 +170,7 @@ void Overlay_mouse::paintAsset(std::string name, const QPoint& place, QPaintDevi
     painter.drawImage(place, image);
 }
 
-void Overlay_mouse::paintTouch(QPaintDevice* device, QPoint corner, double scale) {
+void OverlayMouse::paintTouch(QPaintDevice* device, QPoint corner, double scale) {
     QPoint tl{50, 50};
     float height = 139, width = 139;
 

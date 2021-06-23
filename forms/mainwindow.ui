@@ -51,7 +51,7 @@
         </widget>
        </item>
        <item>
-        <widget class="vnepogodin::Overlay_mouse" name="mouse" native="true">
+        <widget class="vnepogodin::OverlayMouse" name="mouse" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -92,7 +92,7 @@
    <header>vnepogodin/overlay.h</header>
   </customwidget>
   <customwidget>
-   <class>vnepogodin::Overlay_mouse</class>
+   <class>vnepogodin::OverlayMouse</class>
    <extends>QWidget</extends>
    <header>vnepogodin/overlay_mouse.h</header>
   </customwidget>

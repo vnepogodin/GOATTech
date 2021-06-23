@@ -19,17 +19,19 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
-#include <QWidget>
-#include <thread>
 #include <ui_overlay.h>
 #include <vnepogodin/logger.hpp>
+
+#include <thread>
+
+#include <QWidget>
 
 namespace Ui {
 class Overlay;
 }
 
 namespace vnepogodin {
-class Overlay : public QWidget {
+class Overlay final : public QWidget {
     Q_OBJECT
     Q_DISABLE_COPY(Overlay)
  public:

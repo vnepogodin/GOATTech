@@ -30,26 +30,22 @@ class Recorder final {
  public:
     Recorder() = default;
     explicit Recorder(const std::string_view& device_name)
-      : m_audioRecorder(new QAudioRecorder) {
-        m_audioRecorder->setAudioInput(device_name.data());
-        m_audioRecorder->setOutputLocation(QUrl::fromLocalFile("/tmp/capture"));
+      : m_audio_recorder(new QAudioRecorder) {
+        m_audio_recorder->setAudioInput(device_name.data());
+        m_audio_recorder->setOutputLocation(QUrl::fromLocalFile("/tmp/capture"));
     }
 
-    inline void record() noexcept { m_audioRecorder->record(); }
-    inline void stop() noexcept { m_audioRecorder->stop(); }
-
-    inline void toggle() noexcept {
-        if (m_audioRecorder->state() == QMediaRecorder::StoppedState) {
-            this->record();
-            return;
+    inline void record() noexcept { m_audio_recorder->record(); }
+    inline void stop() noexcept {
+        if (m_audio_recorder->state() == QMediaRecorder::RecordingState) {
+            m_audio_recorder->stop();
         }
-        this->stop();
     }
 
     virtual ~Recorder() = default;
 
  private:
-    std::unique_ptr<QAudioRecorder> m_audioRecorder;
+    std::unique_ptr<QAudioRecorder> m_audio_recorder;
 };
 }  // namespace vnepogodin
 

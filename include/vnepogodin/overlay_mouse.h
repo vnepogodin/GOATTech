@@ -19,26 +19,27 @@
 #ifndef OVERLAY_MOUSE_H
 #define OVERLAY_MOUSE_H
 
-#include <QWidget>
-#include <thread>
+#include <ui_overlay_mouse.h>
 #include <vnepogodin/logger.hpp>
 
-#include <ui_overlay_mouse.h>
+#include <thread>
+
+#include <QWidget>
 
 namespace Ui {
-class Overlay_mouse;
+class OverlayMouse;
 }
 
 namespace vnepogodin {
-class Overlay_mouse : public QWidget {
+class OverlayMouse final : public QWidget {
     Q_OBJECT
-    Q_DISABLE_COPY(Overlay_mouse)
+    Q_DISABLE_COPY(OverlayMouse)
  public:
-    explicit Overlay_mouse(QWidget* parent = nullptr);
-    virtual ~Overlay_mouse();
+    explicit OverlayMouse(QWidget* parent = nullptr);
+    virtual ~OverlayMouse();
 
  protected:
-    /**
+   /**
    * @fn paintEvent
    * ----------
    * @description: Overloads default paint constructor in order to render
@@ -52,9 +53,9 @@ class Overlay_mouse : public QWidget {
     const int refresh_rate = 500;  // Frequency of mouse input checking in hertz
     std::thread poll;
 
-    std::unique_ptr<Ui::Overlay_mouse> ui = std::make_unique<Ui::Overlay_mouse>();
+    std::unique_ptr<Ui::OverlayMouse> ui = std::make_unique<Ui::OverlayMouse>();
 
-    /**
+   /**
    * @fn connectMouse
    * ----------
    * @description: Trys to connect to mouse.
@@ -63,7 +64,7 @@ class Overlay_mouse : public QWidget {
    */
     bool connectMouse();
 
-    /**
+   /**
    * @fn paintButtons
    * ----------
    * @description: Helper function for paintEvent that paints buttons that are
@@ -71,7 +72,7 @@ class Overlay_mouse : public QWidget {
    */
     void paintButtons(QPaintDevice* device, QPoint corner, double scale);
 
-    /**
+   /**
    * @fn paintFeatures
    * ----------
    * @description: Helper function for paintEvent that paints mouse features
@@ -79,7 +80,7 @@ class Overlay_mouse : public QWidget {
    */
     void paintFeatures(QPaintDevice* device, QPoint corner, double scale);
 
-    /**
+   /**
    * @fn getScale
    * ----------
    * @returns: Returns the scale of the base mouse svg.
@@ -88,7 +89,7 @@ class Overlay_mouse : public QWidget {
    */
     double getScale(QSize defaultSize, QSize viewBox);
 
-    /**
+   /**
    * @fn locateCorner
    * ----------
    * @returns: Locates the corner point of the base mouse svg on the widget.
@@ -97,21 +98,21 @@ class Overlay_mouse : public QWidget {
    */
     QPoint locateCorner(QSize defaultSize, QSize viewBox);
 
-    /**
+   /**
    * @fn paintLoop
    * ----------
    * @description: Calls repaint on a thread for the specified refresh rate.
    */
     void paintLoop();
 
-    /**
+   /**
    * @fn paintAsset
    * ----------
    * @description: Paints an svg asset with a transparent background.
    */
     inline void paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale);
 
-    /**
+   /**
    * @fn paintTouch
    * ----------
    * @description: Paints cursor onto touch points.

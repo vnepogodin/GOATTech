@@ -20,6 +20,7 @@
 #define WINDOWS_MAINWINDOW_H_
 
 #include <ui_mainwindow.h>
+#include <vnepogodin/recorder.hpp>
 
 #include <Windows.h>
 #include <memory>
@@ -28,7 +29,7 @@
 #include <QProcess>
 
 namespace vnepogodin {
-class MainWindow : public QMainWindow {
+class MainWindow final : public QMainWindow {
     Q_OBJECT
     Q_DISABLE_COPY(MainWindow)
  public:
@@ -45,14 +46,11 @@ class MainWindow : public QMainWindow {
     HWND m_hwnd                     = nullptr;
 
     std::array<std::uint8_t, 2> m_activated;
-    //const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
-    //std::thread poll;
+
+    std::unique_ptr<vnepogodin::Recorder> m_recorder;
 
     std::unique_ptr<QProcess> m_process_settings;
-    //std::unique_ptr<QProcess> m_process_charts;
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();
-
-    //void loadToMemory();
 };
 }  // namespace vnepogodin
 

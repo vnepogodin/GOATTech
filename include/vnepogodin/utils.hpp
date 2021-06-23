@@ -69,17 +69,17 @@ namespace utils {
         {vnepogodin::utils::key_code::X1BUTTON, "x_button"},
         {vnepogodin::utils::key_code::X2BUTTON, "x_button"}};
 
-    inline int round(const double& val) {
+    inline int round(const double& val) noexcept {
         return (val < 0) ? static_cast<int>(std::ceil(val - 0.5)) : static_cast<int>(std::floor(val + 0.5));
     }
 
-    static inline int parse_int(const std::string_view& str) {
+    static inline int parse_int(const std::string_view& str) noexcept {
         int result = 0;
         std::from_chars(str.data(), str.data() + str.size(), result);
         return result;
     }
 
-    static inline int get_propervalue(const nlohmann::json& value) {
+    static inline int get_propervalue(const nlohmann::json& value) noexcept {
         if (value.is_string()) {
             const auto& str = value.get<std::string>();
             return parse_int(str);
@@ -88,8 +88,8 @@ namespace utils {
     }
 
     template <class T>
-    inline void load_key(nlohmann::json& json, T* object, const std::string& key) {
-        constexpr bool is_valid = std::is_same<T, Overlay>::value || std::is_same<T, Overlay_mouse>::value;
+    inline void load_key(const nlohmann::json& json, T* object, const std::string& key) noexcept(false) {
+        constexpr bool is_valid = std::is_same<T, Overlay>::value || std::is_same<T, OverlayMouse>::value;
         if (json.contains(key)) {
             if constexpr (is_valid) {
                 object->setVisible(!get_propervalue(json[key]));
@@ -106,7 +106,7 @@ namespace utils {
         throw std::runtime_error("Unknown type");
     }
 
-    inline std::uint32_t get_key() {
+    inline std::uint32_t get_key() noexcept {
         for (const auto& code : code_list) {
 #ifdef _WIN32
             if (GetAsyncKeyState(code.first)) {
