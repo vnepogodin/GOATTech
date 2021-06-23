@@ -400,7 +400,7 @@ MainWindow::MainWindow(QWidget* parent)
     const auto& rec = QApplication::desktop()->geometry();
 
     // Calculate overlay percentage of the window
-    static constexpr float perc_of_window = 0.18F;
+    static constexpr float perc_of_window = 0.2F;
     const auto& perc_height               = rec.height() * perc_of_window;
     const auto& perc_width                = rec.width() * perc_of_window;
 #else
@@ -438,7 +438,7 @@ MainWindow::MainWindow(QWidget* parent)
     const int& size = qMin(perc_height, perc_width);
 
     m_ui->keyboard->setFixedSize(size, size);
-    m_ui->mouse->setFixedSize(size, size);
+    m_ui->mouse->setFixedSize(size / 1.5, size / 1.5);
 
     QSettings settings(QSettings::UserScope);
     QSettings::setDefaultFormat(QSettings::NativeFormat);
