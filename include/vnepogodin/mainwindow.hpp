@@ -36,13 +36,14 @@ class MainWindow final : public QMainWindow {
     Q_DISABLE_COPY(MainWindow)
  public:
     explicit MainWindow(QWidget* parent = nullptr);
-    virtual ~MainWindow();
+    virtual ~MainWindow() = default;
 
  protected:
     virtual bool event(QEvent* ev) override;
 
  public slots:
-    void iconActivated(QSystemTrayIcon::ActivationReason);
+    void iconActivated(const QSystemTrayIcon::ActivationReason&);
+    void aboutToQuit();
 
  private:
     int m_timer{};
@@ -53,8 +54,6 @@ class MainWindow final : public QMainWindow {
 
     std::unique_ptr<QSystemTrayIcon> m_tray_icon;
     std::unique_ptr<QMenu> m_tray_menu;
-    std::unique_ptr<QAction> m_quit_action;
-    std::unique_ptr<QAction> m_settings_action;
 
     std::unique_ptr<QProcess> m_process_settings;
     std::unique_ptr<Ui::MainWindow> m_ui = std::make_unique<Ui::MainWindow>();

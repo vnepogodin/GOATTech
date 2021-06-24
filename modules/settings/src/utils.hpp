@@ -28,24 +28,13 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QMetaType>
 #include <QSettings>
-#include <QStringList>
 #include <QVariant>
 
 namespace vnepogodin {
-namespace utils {
-    static std::vector<std::string> fromStringList(const QStringList& string_list) {
-        const auto& len = string_list.size();
-        std::vector<std::string> keys(len);
-
-        for (int i = 0; i < len; ++i) {
-            keys[i] = string_list[i].toStdString();
-        }
-
-        return keys;
-    }
-
-    static void toObject(const QSettings* const settings, nlohmann::json& obj) {
+namespace detail {
+    void to_object(const QSettings* const settings, nlohmann::json& obj) {
         for (const auto& _ : settings->childKeys()) {
             if (!_.size()) {
                 return;
@@ -60,14 +49,8 @@ namespace utils {
             case QMetaType::Int:
                 obj[key] = value.toInt();
                 break;
-            case QMetaType::Double:
-                obj[key] = value.toDouble();
-                break;
             case QMetaType::QString:
                 obj[key] = value.toString().toStdString();
-                break;
-            case QMetaType::QStringList:
-                obj[key] = fromStringList(value.toStringList());
                 break;
             case QMetaType::QByteArray:
                 obj[key] = QString::fromUtf8(value.toByteArray().toBase64()).toStdString();
@@ -78,6 +61,18 @@ namespace utils {
         }
     }
 
+    inline void from_object(const nlohmann::json& obj, QSettings* settings) {
+        for (const auto& [key, value] : obj.items()) {
+            if (value.is_string()) {
+                settings->setValue(key.c_str(), value.get<std::string>().c_str());
+                continue;
+            }
+            settings->setValue(key.c_str(), value.get<int>());
+        }
+    }
+}  // namespace detail
+
+namespace utils {
     static inline int parse_int(const std::string_view& str) {
         int result = 0;
         std::from_chars(str.data(), str.data() + str.size(), result);
@@ -92,16 +87,6 @@ namespace utils {
         return value.get<int>();
     }
 
-    static inline void fromObject(const nlohmann::json& obj, QSettings* settings) {
-        for (const auto& [key, value] : obj.items()) {
-            if (value.is_string()) {
-                settings->setValue(key.c_str(), value.get<std::string>().c_str());
-                continue;
-            }
-            settings->setValue(key.c_str(), value.get<int>());
-        }
-    }
-
     template <class T>
     static inline void load_key(nlohmann::json& json, T* object, const std::string& key) {
         if (json.contains(key)) {
@@ -113,7 +98,7 @@ namespace utils {
 
                 const int& index = object->findText(value.c_str());
                 if (index != -1) {
-                   object->setCurrentIndex(index);
+                    object->setCurrentIndex(index);
                 }
                 return;
             }

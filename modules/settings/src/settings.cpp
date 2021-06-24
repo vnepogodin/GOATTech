@@ -32,8 +32,8 @@ Settings::Settings(QWidget* parent)
     m_ui->setupUi(this);
 
     // get audio devices
-    QAudioRecorder audioRecorder;
-    const auto& input_list = audioRecorder.audioInputs();
+    QAudioRecorder audio_recorder;
+    const auto& input_list = audio_recorder.audioInputs();
     std::for_each(input_list.cbegin(), input_list.cend(), [&](const auto& device) {
         m_ui->inputDevice->addItem(device, QVariant(device));
     });
@@ -46,7 +46,7 @@ Settings::Settings(QWidget* parent)
     connect(m_ui->hideMouse, SIGNAL(clicked()), this, SLOT(on_hideMouse()));
     connect(m_ui->inputDevice, SIGNAL(activated(QString)), this, SLOT(on_inputDevice(QString)));
 
-    utils::toObject(m_settings, json);
+    detail::to_object(m_settings, json);
     utils::load_key(json, m_ui->isRun, "isRun");
     utils::load_key(json, m_ui->hideKeyboard, "hideKeyboard");
     utils::load_key(json, m_ui->hideMouse, "hideMouse");
@@ -66,7 +66,7 @@ void Settings::on_cancel() {
 }
 
 void Settings::on_apply() {
-    utils::fromObject(json, m_settings);
+    detail::from_object(json, m_settings);
     close();
 }
 

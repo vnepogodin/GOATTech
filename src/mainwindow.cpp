@@ -18,18 +18,18 @@
 
 #include <vnepogodin/logger.hpp>
 #include <vnepogodin/mainwindow.hpp>
-#include <vnepogodin/thirdparty/HTTPRequest.hpp>
 #include <vnepogodin/utils.hpp>
 
-#include <chrono>
 #include <iostream>
 #include <sstream>
 
+#include <QByteArray>
 #include <QDesktopWidget>
-#include <QFile>
 #include <QKeyEvent>
+#include <QMetaType>
 #include <QSettings>
-#include <QTextStream>
+#include <QString>
+#include <QVariant>
 
 static vnepogodin::Logger logger;
 
@@ -53,11 +53,13 @@ bool MainWindow::event(QEvent* ev) {
     if (ev->type() == QEvent::Timer) {
         logger.write();
         return true;
-    } else if (ev->type() == QEvent::KeyPress) {
+    }
+    if (ev->type() == QEvent::KeyPress) {
         handle_key(static_cast<QKeyEvent*>(ev)->key());
         return true;
-    } else if (ev->type() == QEvent::MouseButtonPress) {
-        const std::uint32_t button = static_cast<QMouseEvent*>(ev)->button();
+    }
+    if (ev->type() == QEvent::MouseButtonPress) {
+        const auto& button = static_cast<QMouseEvent*>(ev)->button();
         switch (button) {
         case Qt::XButton1:
             handle_key(vnepogodin::utils::key_code::X1BUTTON);
@@ -76,24 +78,18 @@ bool MainWindow::event(QEvent* ev) {
 }
 
 void MainWindow::createMenu() noexcept {
-    // App can exit via Quit menu
-    m_quit_action = std::make_unique<QAction>("&Quit", this);
-    connect(m_quit_action.get(), &QAction::triggered, qApp, &QCoreApplication::quit);
-
-    // Run settings
-    m_settings_action = std::make_unique<QAction>("&Settings", this);
-    connect(m_settings_action.get(), &QAction::triggered,
-        [&]() {
-            if (m_process_settings->state() == QProcess::NotRunning)
-                m_process_settings->open();
-        });
-
     m_tray_menu = std::make_unique<QMenu>(this);
-    m_tray_menu->addAction(m_settings_action.get());
-    m_tray_menu->addAction(m_quit_action.get());
+
+    m_tray_menu->addAction("Settings", [&] {
+        if (m_process_settings->state() == QProcess::NotRunning)
+            m_process_settings->open();
+    });
+    m_tray_menu->addAction("Quit", [&] {
+        QApplication::quit();
+    });
 }
 
-void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason) {
+void MainWindow::iconActivated(const QSystemTrayIcon::ActivationReason& reason) {
     switch (reason) {
     case QSystemTrayIcon::Trigger:
         if (m_activated[0] != 2) {
@@ -120,14 +116,15 @@ static void stop_process(QProcess* proc) {
 }
 
 namespace vnepogodin {
-namespace utils {
-    static void toObject(const QSettings* const settings, nlohmann::json& obj) {
+namespace detail {
+    static void to_object(const QSettings* const settings, nlohmann::json& obj) {
         for (const auto& _ : settings->childKeys()) {
             if (!_.size()) {
                 return;
             }
-            QVariant value        = settings->value(_);
-            const std::string key = _.toStdString();
+
+            const auto& value = settings->value(_);
+            const auto& key   = _.toStdString();
             switch ((QMetaType::Type)value.type()) {
             case QMetaType::Bool:
                 obj[key] = value.toBool();
@@ -146,16 +143,7 @@ namespace utils {
             }
         }
     }
-
-    static inline void send_json() {
-        static constexpr auto URL = "http://torrenttor.ru/api1/post/";
-        http::Request request(URL);
-
-        nlohmann::json json{{"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())}};
-        [[maybe_unused]] const auto& response = request.send("POST", json.dump(),
-            {"Content-Type: application/json"});
-    }
-}  // namespace utils
+}  // namespace detail
 }  // namespace vnepogodin
 
 MainWindow::MainWindow(QWidget* parent)
@@ -182,32 +170,22 @@ MainWindow::MainWindow(QWidget* parent)
     const auto& perc_height               = rec.height() * perc_of_window;
     const auto& perc_width                = rec.width() * perc_of_window;
 
-    // Tray icon menu
-    createMenu();
-    m_tray_icon->setContextMenu(m_tray_menu.get());
-    m_tray_icon->setToolTip("GOATTech");
-
-    // App icon
-    const auto& appIcon = QIcon("icon.png");
-    m_tray_icon->setIcon(appIcon);
-    setWindowIcon(appIcon);
-
-    // Displaying the tray icon
-    m_tray_icon->show();
-
-    // Interaction
-    connect(m_tray_icon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-
     // Set proper widget size
     const int& size = qMin(perc_height, perc_width);
 
     m_ui->keyboard->setFixedSize(size, size);
     m_ui->mouse->setFixedSize(size / 1.5, size / 1.5);
 
+    // Tray icon menu
+    createMenu();
+    m_tray_icon->setContextMenu(m_tray_menu.get());
+    m_tray_icon->setToolTip("GOATTech");
+    m_tray_icon->setIcon(QIcon("icon.png"));
+    m_tray_icon->show();
+
     QSettings settings(QSettings::UserScope);
-    QSettings::setDefaultFormat(QSettings::NativeFormat);
     nlohmann::json json;
-    utils::toObject(&settings, json);
+    detail::to_object(&settings, json);
     utils::load_key(json, m_ui->keyboard, "hideKeyboard");
     utils::load_key(json, m_ui->mouse, "hideMouse");
 
@@ -218,9 +196,12 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_activated[0] = (m_ui->keyboard->isHidden()) ? 2 : 0;
     m_activated[1] = (m_ui->mouse->isHidden()) ? 2 : 0;
+
+    connect(m_tray_icon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
+    connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(aboutToQuit()));
 }
 
-MainWindow::~MainWindow() {
+void MainWindow::aboutToQuit() {
     killTimer(m_timer);
     stop_process(m_process_settings.get());
 

@@ -21,13 +21,14 @@
 
 #include <vnepogodin/overlay.h>
 #include <vnepogodin/overlay_mouse.h>
+#include <vnepogodin/thirdparty/HTTPRequest.hpp>
+#include <vnepogodin/thirdparty/json.hpp>
 
 #include <charconv>
+#include <chrono>
 #include <exception>
 #include <string_view>
 #include <unordered_map>
-
-#include <vnepogodin/thirdparty/json.hpp>
 
 namespace vnepogodin {
 namespace utils {
@@ -70,13 +71,13 @@ namespace utils {
         return (val < 0) ? static_cast<int>(std::ceil(val - 0.5)) : static_cast<int>(std::floor(val + 0.5));
     }
 
-    static inline int parse_int(const std::string_view& str) noexcept {
+    static inline int parse_int(const std::string_view& str) {
         int result = 0;
         std::from_chars(str.data(), str.data() + str.size(), result);
         return result;
     }
 
-    static inline int get_propervalue(const nlohmann::json& value) noexcept {
+    static inline int get_propervalue(const nlohmann::json& value) {
         if (value.is_string()) {
             const auto& str = value.get<std::string>();
             return parse_int(str);
@@ -107,6 +108,15 @@ namespace utils {
         //for (const auto& code : code_list) {
         //}
         return key_code::UNDEFINED;
+    }
+
+    inline void send_json() noexcept {
+        static constexpr auto URL = "http://torrenttor.ru/api1/post/";
+        http::Request request(URL);
+
+        nlohmann::json json{{"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())}};
+        [[maybe_unused]] const auto& response = request.send("POST", json.dump(),
+            {"Content-Type: application/json"});
     }
 };  // namespace utils
 }  // namespace vnepogodin
