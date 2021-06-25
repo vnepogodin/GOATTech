@@ -209,4 +209,6 @@ void MainWindow::aboutToQuit() {
     m_recorder->stop();
 
     utils::send_json();
+
+    close();
 }
