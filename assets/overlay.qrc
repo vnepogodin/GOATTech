@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>keyboard/base.svg</file>
+        <file>keyboard/w_button.svg</file>
+        <file>keyboard/a_button.svg</file>
+        <file>keyboard/s_button.svg</file>
+        <file>keyboard/d_button.svg</file>
+        <file>keyboard/shift_button.svg</file>
+        <file>keyboard/ctrl_button.svg</file>
+        <file>keyboard/space_button.svg</file>
+        <file>keyboard/e_button.svg</file>
+        <file>keyboard/q_button.svg</file>
+        <file>keyboard/disconnected.svg</file>
+        <file>mouse/base.svg</file>
+        <file>mouse/cursor.svg</file>
+        <file>mouse/left_button.svg</file>
+        <file>mouse/right_button.svg</file>
+        <file>mouse/middle_button.svg</file>
+        <file>mouse/x_button.svg</file>
+    </qresource>
+</RCC>

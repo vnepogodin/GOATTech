@@ -16,7 +16,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <vnepogodin/overlay_mouse.h>
+#include <vnepogodin/overlay.h>
 #include <vnepogodin/utils.hpp>
 
 #include <array>
@@ -24,7 +24,6 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <unordered_map>
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -33,21 +32,21 @@
 
 using namespace vnepogodin;
 
-OverlayMouse::OverlayMouse(QWidget* parent) : QWidget(parent) {
+Overlay::Overlay(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
 
     setAttribute(Qt::WA_NativeWindow);
-    connectMouse();
+    connectKeyboard();
 }
 
-void OverlayMouse::paintEvent(QPaintEvent*) {
+void Overlay::paintEvent(QPaintEvent*) {
     // Initialize renderer with base asset
     QSvgRenderer renderer;
 
-    if (mouseConnected)
-        renderer.load(QString(":/assets/mouse/base.svg"));
+    if (keyboardConnected)
+        renderer.load(QString(":/keyboard/base.svg"));
     else
-        renderer.load(QString(":/assets/mouse/disconnected.svg"));
+        renderer.load(QString(":/keyboard/disconnected.svg"));
 
     renderer.setAspectRatioMode(Qt::KeepAspectRatio);
 
@@ -56,19 +55,18 @@ void OverlayMouse::paintEvent(QPaintEvent*) {
     renderer.render(&painter);
     renderer.setViewBox(QRectF(0, 0, this->width(), this->height()));
 
-    if (mouseConnected) {
+    if (keyboardConnected) {
         QPoint corner = locateCorner(renderer.defaultSize(), renderer.viewBox().size());
         double scale  = getScale(renderer.defaultSize(), renderer.viewBox().size());
         paintFeatures(this, corner, scale);
     }
 }
 
-void OverlayMouse::paintFeatures(QPaintDevice* device, QPoint corner, double scale) {
+void Overlay::paintFeatures(QPaintDevice* device, QPoint corner, double scale) {
     paintButtons(this, corner, scale);
-    //paintTouch(this, corner, scale);
 }
 
-QPoint OverlayMouse::locateCorner(QSize defaultSize, QSize viewBox) {
+QPoint Overlay::locateCorner(QSize defaultSize, QSize viewBox) {
     double defaultAR = (double)defaultSize.width() / (double)defaultSize.height();
     double viewAR    = (double)viewBox.width() / (double)viewBox.height();
 
@@ -95,7 +93,7 @@ QPoint OverlayMouse::locateCorner(QSize defaultSize, QSize viewBox) {
     return QPoint(x, y);
 }
 
-double OverlayMouse::getScale(QSize defaultSize, QSize viewBox) {
+double Overlay::getScale(QSize defaultSize, QSize viewBox) {
     double result;
     QPoint corner = locateCorner(defaultSize, viewBox);
 
@@ -106,40 +104,44 @@ double OverlayMouse::getScale(QSize defaultSize, QSize viewBox) {
     return result;
 }
 
-bool OverlayMouse::connectMouse() {
+bool Overlay::connectKeyboard() {
     // Start polling
-    mouseConnected = false;
+    keyboardConnected = false;
 
     if (poll.joinable())
         poll.join();
 
-    mouseConnected = true;
-    poll           = std::thread(&OverlayMouse::paintLoop, this);
+    keyboardConnected = true;
+    poll              = std::thread(&Overlay::paintLoop, this);
 
     return true;
 }
 
-void OverlayMouse::paintLoop() {
-    while (mouseConnected) {
+void Overlay::paintLoop() {
+    while (keyboardConnected) {
         update();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refresh_rate));
     }
 }
 
-OverlayMouse::~OverlayMouse() {
-    mouseConnected = false;
+Overlay::~Overlay() {
+    keyboardConnected = false;
     poll.join();
 }
 
-void OverlayMouse::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
+void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
     const auto& button = utils::get_key();
 
-    const std::unordered_map<uint8_t, std::pair<std::string_view, QPoint>> button_map = {
-        {utils::key_code::LBUTTON, {"left_button", {10, 0}}},
-        {utils::key_code::RBUTTON, {"right_button", {512, 0}}},
-        {utils::key_code::MBUTTON, {"middle_button", {415, 273}}},
-        {utils::key_code::X1BUTTON, {"x_button", {2, 735}}},
-        {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}};
+    const std::unordered_map<uint32_t, std::pair<std::string_view, QPoint>> button_map = {
+        {utils::key_code::W, {"w_button", {384, 0}}},
+        {utils::key_code::A, {"a_button", {169, 182}}},
+        {utils::key_code::S, {"s_button", {338, 182}}},
+        {utils::key_code::D, {"d_button", {508, 182}}},
+        {utils::key_code::Q, {"q_button", {210, 0}}},
+        {utils::key_code::E, {"e_button", {552, 0}}},
+        {utils::key_code::SHIFT, {"shift_button", {0, 182}}},
+        {utils::key_code::CONTROL, {"ctrl_button", {23, 360}}},
+        {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
     for (const auto& [mask, asset] : button_map) {
         if (mask == button) {
             const QPoint& location = QPoint(utils::round((double)asset.second.x() * scale) + corner.x(),
@@ -149,8 +151,8 @@ void OverlayMouse::paintButtons(QPaintDevice* device, QPoint corner, double scal
     }
 }
 
-void OverlayMouse::paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale) {
-    name = ":/assets/mouse/" + name + ".svg";
+void Overlay::paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale) {
+    name = ":/keyboard/" + name + ".svg";
     QSvgRenderer renderer;
     renderer.load(QString(name.c_str()));
 
@@ -165,22 +167,4 @@ void OverlayMouse::paintAsset(std::string name, const QPoint& place, QPaintDevic
 
     QPainter painter(device);
     painter.drawImage(place, image);
-}
-
-void OverlayMouse::paintTouch(QPaintDevice* device, QPoint corner, double scale) {
-    QPoint tl{50, 50};
-    float height = 139, width = 139;
-
-#if 0
-    POINT ptOld;
-    GetCursorPos(&ptOld);
-
-    const QPoint& location = QPoint(
-        (int)utils::round(((double)tl.x() + (double)((unsigned)ptOld.x % (unsigned)width)) * scale) + corner.rx(),
-        (int)utils::round(((double)tl.y() + (double)((unsigned)ptOld.y % (unsigned)height)) * scale) + corner.ry());
-#ifndef _NDEBUG
-    std::cout << "\nX: " << location.x() << " Y:" << location.y() << '\n';
-#endif
-    paintAsset("cursor", location, device, scale);
-#endif
 }

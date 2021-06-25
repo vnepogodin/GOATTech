@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.12)
 ## name and version
 ##
 project(overlay
-        VERSION 0.8.5)
+        VERSION 0.9.3)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -20,11 +20,6 @@ include(FindThreads)
 
 find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Svg Multimedia REQUIRED)
-
-##
-## OPTIONS
-##
-#option(ENABLE_SETTINGS "Enable GOATTech Settings" ON)
 
 ##
 ## CONFIGURATION
@@ -50,17 +45,12 @@ endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -flto -D_NDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og")
 
-#add_subdirectory(thirdparty/JoyShockLibrary)
-
 add_library(project_warnings INTERFACE)
 
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
-#if(ENABLE_SETTINGS)
-add_subdirectory(modules/settings)
-#endif()
-#add_subdirectory(modules/webui)
+add_subdirectory(../modules/settings ${CMAKE_CURRENT_BINARY_DIR}/modules/settings)
 
 ##
 ## Target
@@ -76,7 +66,7 @@ add_executable(${PROJECT_NAME}
     include/vnepogodin/mainwindow.hpp src/mainwindow.cpp
     forms/overlay.ui forms/overlay_mouse.ui
 
-    src/main.cpp overlay.qrc
+    src/main.cpp ../assets/overlay.qrc
     )
 
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})

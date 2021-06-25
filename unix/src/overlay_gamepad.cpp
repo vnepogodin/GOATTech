@@ -16,9 +16,9 @@ void Overlay::paintEvent(QPaintEvent*) {
     QSvgRenderer* renderer;
 
     if (gamepadConnected)
-        renderer = new QSvgRenderer(QString(":/assets/dualshock_black/base.svg"));
+        renderer = new QSvgRenderer(QString(":/dualshock_black/base.svg"));
     else
-        renderer = new QSvgRenderer(QString(":/assets/dualshock_black/disconnected.svg"));
+        renderer = new QSvgRenderer(QString(":/dualshock_black/disconnected.svg"));
 
     renderer->setAspectRatioMode(Qt::KeepAspectRatio);
 
@@ -131,13 +131,6 @@ Overlay::~Overlay() {
     JslDisconnectAndDisposeAll();
 }
 void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    // using json = nlohmann::json;
-    // const std::string filename = "assets/dualshock_black/placement.json";
-    // std::ifstream reader(filename);
-    // json j;
-    // reader >> j;
-    // reader.close();
-
     int buttons = JslGetButtons(deviceID);
 
     QPainter painter(device);
@@ -163,7 +156,7 @@ void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
 
     for (const auto& [mask, asset] : button_map) {
         if ((mask & buttons) != 0) {
-            std::string filename = ":/assets/dualshock_black/" + asset.first + ".svg";
+            std::string filename = ":/dualshock_black/" + asset.first + ".svg";
 
             renderer.load(QString(filename.c_str()));
 
@@ -201,7 +194,7 @@ void Overlay::paintAxes(QPaintDevice* device, QPoint corner, double scale) {
     location = QPoint(utils::round(((double)left.second.x() + offset * JslGetLeftX(deviceID)) * scale) + corner.x(), utils::round(((double)left.second.y() - offset * JslGetLeftY(deviceID)) * scale) + corner.y());
     paintAsset(left.first, location, this, corner, scale);
 
-    // std::string filename = ":/assets/dualshock_black/" + asset.first + ".svg";
+    // std::string filename = ":/dualshock_black/" + asset.first + ".svg";
 
     // renderer.load(QString(filename.c_str()));
 
@@ -223,7 +216,7 @@ void Overlay::paintAxes(QPaintDevice* device, QPoint corner, double scale) {
 }
 void Overlay::paintAsset(std::string name, QPoint place, QPaintDevice* device,
     QPoint corner, double scale) {
-    name = ":/assets/dualshock_black/" + name + ".svg";
+    name = ":/dualshock_black/" + name + ".svg";
     QSvgRenderer renderer;
     renderer.load(QString(name.c_str()));
 
