@@ -86,7 +86,7 @@ bool Overlay::connectGamepad() {
 
     // Check for devices
     if (num_devices == 0) {
-#ifndef _NDEBUG
+#ifndef NDEBUG
         std::cout << "No controllers found" << std::endl;
 #endif
         gamepadConnected = false;
@@ -102,7 +102,7 @@ bool Overlay::connectGamepad() {
             return true;
         }
     }
-#ifndef _NDEBUG
+#ifndef NDEBUG
     std::cout << "Change of controllers" << std::endl;
 #endif
     deviceID = handle_array[0];

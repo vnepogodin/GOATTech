@@ -178,7 +178,7 @@ void OverlayMouse::paintTouch(QPaintDevice* device, QPoint corner, double scale)
     const QPoint& location = QPoint(
         (int)utils::round(((double)tl.x() + (double)((unsigned)ptOld.x % (unsigned)width)) * scale) + corner.rx(),
         (int)utils::round(((double)tl.y() + (double)((unsigned)ptOld.y % (unsigned)height)) * scale) + corner.ry());
-#ifndef _NDEBUG
+#ifndef NDEBUG
     std::cout << "\nX: " << location.x() << " Y:" << location.y() << '\n';
 #endif
     paintAsset("cursor", location, device, scale);
