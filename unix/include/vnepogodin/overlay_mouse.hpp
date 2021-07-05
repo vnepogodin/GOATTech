@@ -16,10 +16,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef OVERLAY_H
-#define OVERLAY_H
+#ifndef OVERLAY_MOUSE_HPP
+#define OVERLAY_MOUSE_HPP
 
-#include <ui_overlay.h>
+#include <ui_overlay_mouse.h>
 #include <vnepogodin/logger.hpp>
 
 #include <thread>
@@ -27,44 +27,44 @@
 #include <QWidget>
 
 namespace Ui {
-class Overlay;
+class OverlayMouse;
 }
 
 namespace vnepogodin {
-class Overlay final : public QWidget {
+class OverlayMouse final : public QWidget {
     Q_OBJECT
-    Q_DISABLE_COPY(Overlay)
+    Q_DISABLE_COPY(OverlayMouse)
  public:
-    explicit Overlay(QWidget* parent = nullptr);
-    virtual ~Overlay();
+    explicit OverlayMouse(QWidget* parent = nullptr);
+    virtual ~OverlayMouse();
 
  protected:
-    /**
+   /**
    * @fn paintEvent
    * ----------
    * @description: Overloads default paint constructor in order to render
-   * keyboard overlay svgs.
+   * mouse overlay svgs.
    */
     void paintEvent(QPaintEvent*) override;
 
  private:
     /** Private Members */
-    bool keyboardConnected = false;
-    const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
+    bool mouseConnected    = false;
+    const int refresh_rate = 500;  // Frequency of mouse input checking in hertz
     std::thread poll;
 
-    std::unique_ptr<Ui::Overlay> ui = std::make_unique<Ui::Overlay>();
+    std::unique_ptr<Ui::OverlayMouse> ui = std::make_unique<Ui::OverlayMouse>();
 
-    /**
-   * @fn connectKeyboard
+   /**
+   * @fn connectMouse
    * ----------
-   * @description: Trys to connect to keyboard.
-   * @returns: true if keyboard is connected and false if no connection can be
+   * @description: Trys to connect to mouse.
+   * @returns: true if mouse is connected and false if no connection can be
    * made
    */
-    bool connectKeyboard();
+    bool connectMouse();
 
-    /**
+   /**
    * @fn paintButtons
    * ----------
    * @description: Helper function for paintEvent that paints buttons that are
@@ -72,46 +72,53 @@ class Overlay final : public QWidget {
    */
     void paintButtons(QPaintDevice* device, QPoint corner, double scale);
 
-    /**
+   /**
    * @fn paintFeatures
    * ----------
-   * @description: Helper function for paintEvent that paints keyboard features
+   * @description: Helper function for paintEvent that paints mouse features
    * that are on.
    */
     void paintFeatures(QPaintDevice* device, QPoint corner, double scale);
 
-    /**
+   /**
    * @fn getScale
    * ----------
-   * @returns: Returns the scale of the base keyboard svg.
+   * @returns: Returns the scale of the base mouse svg.
    * @p defaultSize is provided by a member function of the svg renderer
    * @p viewBox is the size of the widget the svg is drawn on
    */
     double getScale(QSize defaultSize, QSize viewBox);
 
-    /**
+   /**
    * @fn locateCorner
    * ----------
-   * @returns: Locates the corner point of the base keyboard svg on the widget.
+   * @returns: Locates the corner point of the base mouse svg on the widget.
    * @p defaultSize is provided by a member function of the svg renderer
    * @p viewBox is the size of the widget the svg is drawn on
    */
     QPoint locateCorner(QSize defaultSize, QSize viewBox);
 
-    /**
+   /**
    * @fn paintLoop
    * ----------
    * @description: Calls repaint on a thread for the specified refresh rate.
    */
     void paintLoop();
 
-    /**
+   /**
    * @fn paintAsset
    * ----------
    * @description: Paints an svg asset with a transparent background.
    */
     inline void paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale);
-};
-}
 
-#endif  // OVERLAY_H
+   /**
+   * @fn paintTouch
+   * ----------
+   * @description: Paints cursor onto touch points.
+   */
+    void paintTouch(QPaintDevice* device, QPoint corner, double scale);
+};
+}  // namespace vnepogodin
+
+#endif  // OVERLAY_MOUSE_HPP

@@ -89,12 +89,12 @@
   <customwidget>
    <class>vnepogodin::Overlay</class>
    <extends>QWidget</extends>
-   <header>vnepogodin/overlay.h</header>
+   <header>vnepogodin/overlay.hpp</header>
   </customwidget>
   <customwidget>
    <class>vnepogodin::OverlayMouse</class>
    <extends>QWidget</extends>
-   <header>vnepogodin/overlay_mouse.h</header>
+   <header>vnepogodin/overlay_mouse.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

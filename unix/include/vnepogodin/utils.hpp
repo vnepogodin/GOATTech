@@ -19,8 +19,8 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <vnepogodin/overlay.h>
-#include <vnepogodin/overlay_mouse.h>
+#include <vnepogodin/overlay.hpp>
+#include <vnepogodin/overlay_mouse.hpp>
 #include <vnepogodin/thirdparty/HTTPRequest.hpp>
 #include <vnepogodin/thirdparty/json.hpp>
 

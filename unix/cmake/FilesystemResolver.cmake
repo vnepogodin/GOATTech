@@ -1,0 +1,6 @@
+message(STATUS "[FilesystemResolver]: Using standard C++ filesystem API")
+if(APPLE OR "${CMAKE_SYSTEM}" MATCHES "Linux")
+    set(FILESYSTEM_LIBS "stdc++fs")
+else()
+    set(FILESYSTEM_LIBS)
+endif()

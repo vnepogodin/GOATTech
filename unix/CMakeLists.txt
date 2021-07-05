@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 ##
 ## PROJECT
 ## name and version
@@ -16,6 +18,9 @@ message(STATUS "BUILD: ${CMAKE_BUILD_TYPE}")
 ##
 ## INCLUDE
 ##
+include(CompilerWarnings)
+include(EnableCcache)
+include(ClangTidy)
 include(FindThreads)
 
 find_package(Threads REQUIRED)
@@ -29,7 +34,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 
 if(CMAKE_GENERATOR STREQUAL "Ninja")
   if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -45,8 +49,6 @@ endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math -flto")
 
 add_library(project_warnings INTERFACE)
-
-include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
 add_subdirectory(../modules/settings ${CMAKE_CURRENT_BINARY_DIR}/modules/settings)
@@ -59,11 +61,9 @@ add_executable(${PROJECT_NAME}
     include/vnepogodin/logger.hpp
     include/vnepogodin/utils.hpp
     include/vnepogodin/thirdparty/json.hpp
-    include/vnepogodin/overlay.h src/overlay.cpp
-    include/vnepogodin/overlay_mouse.h src/overlay_mouse.cpp
-    forms/mainwindow.ui
+    include/vnepogodin/overlay.hpp src/overlay.cpp
+    include/vnepogodin/overlay_mouse.hpp src/overlay_mouse.cpp
     include/vnepogodin/mainwindow.hpp src/mainwindow.cpp
-    forms/overlay.ui forms/overlay_mouse.ui
 
     src/main.cpp ../assets/overlay.qrc
     )
@@ -72,8 +72,8 @@ add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia ${HIDAPI_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
-include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${Qt5Widgets_INCLUDES})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia ${CMAKE_THREAD_LIBS_INIT})
+include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_custom_target(run
     COMMAND ./${PROJECT_NAME}
