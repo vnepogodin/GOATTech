@@ -53,6 +53,8 @@ set_project_warnings(project_warnings)
 
 add_subdirectory(../modules/settings ${CMAKE_CURRENT_BINARY_DIR}/modules/settings)
 
+add_subdirectory(thirdparty)
+
 ##
 ## Target
 ##
@@ -71,8 +73,9 @@ add_executable(${PROJECT_NAME}
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
+#include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia uiohook ${CMAKE_THREAD_LIBS_INIT})
 include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_custom_target(run
