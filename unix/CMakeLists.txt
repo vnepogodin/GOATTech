@@ -59,6 +59,7 @@ add_subdirectory(thirdparty)
 ## Target
 ##
 add_executable(${PROJECT_NAME}
+    include/vnepogodin/buffer.hpp
     include/vnepogodin/recorder.hpp
     include/vnepogodin/logger.hpp
     include/vnepogodin/utils.hpp

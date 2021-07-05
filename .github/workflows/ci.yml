@@ -14,6 +14,8 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
+      - name: Install Dependencies
+        uses: sudo apt install libxtst-dev
 
       - name: Configure CMake
         run: ./configure.sh
