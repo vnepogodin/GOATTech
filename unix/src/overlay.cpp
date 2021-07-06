@@ -144,8 +144,8 @@ void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
         {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
     for (const auto& [mask, asset] : button_map) {
         if (mask == button) {
-            const QPoint& location = QPoint(utils::round((double)asset.second.x() * scale) + corner.x(),
-                utils::round((double)asset.second.y() * scale) + corner.y());
+            const QPoint& location = QPoint(std::round((double)asset.second.x() * scale) + corner.x(),
+                std::round((double)asset.second.y() * scale) + corner.y());
             paintAsset(asset.first.data(), location, device, scale);
         }
     }
@@ -156,8 +156,8 @@ void Overlay::paintAsset(std::string name, const QPoint& place, QPaintDevice* de
     QSvgRenderer renderer;
     renderer.load(QString(name.c_str()));
 
-    const int& width  = utils::round((double)renderer.defaultSize().width() * scale);
-    const int& height = utils::round((double)renderer.defaultSize().height() * scale);
+    const int& width  = std::round((double)renderer.defaultSize().width() * scale);
+    const int& height = std::round((double)renderer.defaultSize().height() * scale);
 
     QImage image(width, height, QImage::Format_ARGB32);
     image.fill(Qt::transparent);

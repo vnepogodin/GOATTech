@@ -20,7 +20,6 @@
 #define OVERLAY_HPP
 
 #include <ui_overlay.h>
-#include <vnepogodin/logger.hpp>
 
 #include <thread>
 
@@ -112,6 +111,6 @@ class Overlay final : public QWidget {
    */
     inline void paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale);
 };
-}
+}  // namespace vnepogodin
 
 #endif  // OVERLAY_HPP

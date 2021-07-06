@@ -21,6 +21,8 @@
 
 #include <cstdint>
 #include <cstring>
+
+#include <bit>
 #include <vector>
 
 namespace vnepogodin {
@@ -32,9 +34,10 @@ class buffer {
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    explicit buffer(std::size_t len = 0) {
-        if (len > 0)
+    explicit buffer(const std::size_t& len = 0) {
+        if (len > 0) {
             resize(len);
+        }
     }
 
     virtual ~buffer() = default;
@@ -44,37 +47,37 @@ class buffer {
         m_write_pos = 0;
     }
 
-    constexpr void resize(std::size_t new_size) {
+    void resize(const std::size_t& new_size) noexcept {
         m_buf.resize(new_size);
     }
 
-    constexpr void write(const void* value, std::size_t size) {
+    void write(const void* value, const std::size_t& size) noexcept {
         if (m_write_pos + size >= m_buf.size())
             resize(m_write_pos + size * 1.5);
-        memcpy(m_buf.data() + m_write_pos, value, size);
+        memcpy(&m_buf[m_write_pos], value, size);
         m_write_pos += size;
     }
 
-    constexpr void read(void** dest, std::size_t size) {
+    inline void read(void** dest, const std::size_t& size) const noexcept {
         if (size + m_read_pos < m_buf.size()) {
-            *dest = reinterpret_cast<void*>(data() + m_read_pos);
+            *dest = std::bit_cast<void*>(&m_buf[m_read_pos]);
         }
     }
 
     template <class T>
-    constexpr auto write(const T& val) -> T* {
+    auto write(const T& val) noexcept -> T* {
         if (m_write_pos + sizeof(T) >= m_buf.size())
             resize(m_write_pos + sizeof(T) * 1.5);
-        memcpy(data() + m_write_pos, &val, sizeof(T));
-        auto* res = reinterpret_cast<T*>(data() + m_write_pos);
+        memcpy(&m_buf[m_write_pos], &val, sizeof(T));
+        auto* result = std::bit_cast<T*>(&m_buf[m_write_pos]);
         m_write_pos += sizeof(T);
-        return res;
+        return result;
     }
 
     template <class T>
-    constexpr auto read() -> T* {
+    constexpr auto read() noexcept -> T* {
         if (sizeof(T) + m_read_pos < size()) {
-            auto result = static_cast<T*>(data() + m_read_pos);
+            auto* result = std::bit_cast<T*>(&m_buf[m_read_pos]);
             m_read_pos += sizeof(T);
             return result;
         }
@@ -86,10 +89,10 @@ class buffer {
     inline auto
     operator[](const std::size_t& idx) const noexcept -> const_reference { return m_buf[idx]; }
 
-    constexpr std::size_t size() const noexcept { return m_buf.size(); }
+    inline std::size_t size() const noexcept { return m_buf.size(); }
     constexpr std::size_t write_pos() const noexcept { return m_write_pos; }
     constexpr std::size_t read_pos() const noexcept { return m_read_pos; }
-    constexpr pointer data() { return m_buf.data(); }
+    inline pointer data() noexcept { return m_buf.data(); }
 
  private:
     std::size_t m_write_pos = 0;

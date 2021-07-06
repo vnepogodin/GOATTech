@@ -20,7 +20,6 @@
 #define OVERLAY_MOUSE_HPP
 
 #include <ui_overlay_mouse.h>
-#include <vnepogodin/logger.hpp>
 
 #include <thread>
 
@@ -39,7 +38,7 @@ class OverlayMouse final : public QWidget {
     virtual ~OverlayMouse();
 
  protected:
-   /**
+    /**
    * @fn paintEvent
    * ----------
    * @description: Overloads default paint constructor in order to render
@@ -55,7 +54,7 @@ class OverlayMouse final : public QWidget {
 
     std::unique_ptr<Ui::OverlayMouse> ui = std::make_unique<Ui::OverlayMouse>();
 
-   /**
+    /**
    * @fn connectMouse
    * ----------
    * @description: Trys to connect to mouse.
@@ -64,7 +63,7 @@ class OverlayMouse final : public QWidget {
    */
     bool connectMouse();
 
-   /**
+    /**
    * @fn paintButtons
    * ----------
    * @description: Helper function for paintEvent that paints buttons that are
@@ -72,7 +71,7 @@ class OverlayMouse final : public QWidget {
    */
     void paintButtons(QPaintDevice* device, QPoint corner, double scale);
 
-   /**
+    /**
    * @fn paintFeatures
    * ----------
    * @description: Helper function for paintEvent that paints mouse features
@@ -80,7 +79,7 @@ class OverlayMouse final : public QWidget {
    */
     void paintFeatures(QPaintDevice* device, QPoint corner, double scale);
 
-   /**
+    /**
    * @fn getScale
    * ----------
    * @returns: Returns the scale of the base mouse svg.
@@ -89,7 +88,7 @@ class OverlayMouse final : public QWidget {
    */
     double getScale(QSize defaultSize, QSize viewBox);
 
-   /**
+    /**
    * @fn locateCorner
    * ----------
    * @returns: Locates the corner point of the base mouse svg on the widget.
@@ -98,21 +97,21 @@ class OverlayMouse final : public QWidget {
    */
     QPoint locateCorner(QSize defaultSize, QSize viewBox);
 
-   /**
+    /**
    * @fn paintLoop
    * ----------
    * @description: Calls repaint on a thread for the specified refresh rate.
    */
     void paintLoop();
 
-   /**
+    /**
    * @fn paintAsset
    * ----------
    * @description: Paints an svg asset with a transparent background.
    */
     inline void paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale);
 
-   /**
+    /**
    * @fn paintTouch
    * ----------
    * @description: Paints cursor onto touch points.

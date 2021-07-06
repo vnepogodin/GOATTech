@@ -21,7 +21,6 @@
 #include <vnepogodin/utils.hpp>
 
 #include <iostream>
-#include <sstream>
 
 #include <QByteArray>
 #include <QDesktopWidget>
@@ -31,51 +30,7 @@
 #include <QString>
 #include <QVariant>
 
-static vnepogodin::Logger logger;
-
 using namespace vnepogodin;
-static inline std::uint32_t handle_key(std::uint32_t key_stroke) {
-    for (const auto& code : utils::code_list) {
-        if (code.first == key_stroke) {
-            logger.add_key(code.second);
-            return code.first;
-        }
-    }
-
-    return utils::key_code::UNDEFINED;
-}
-
-/* Qt just uses the QWidget* parent as transient parent for native
- * platform dialogs. This makes it impossible to make them transient
- * to a bare QWindow*. So we catch the show event for the QDialog
- * and setTransientParent here instead. */
-bool MainWindow::event(QEvent* ev) {
-    if (ev->type() == QEvent::Timer) {
-        logger.write();
-        return true;
-    }
-    if (ev->type() == QEvent::KeyPress) {
-        handle_key(static_cast<QKeyEvent*>(ev)->key());
-        return true;
-    }
-    if (ev->type() == QEvent::MouseButtonPress) {
-        const auto& button = static_cast<QMouseEvent*>(ev)->button();
-        switch (button) {
-        case Qt::XButton1:
-            handle_key(vnepogodin::utils::key_code::X1BUTTON);
-            break;
-        case Qt::XButton2:
-            handle_key(vnepogodin::utils::key_code::X2BUTTON);
-            break;
-        default:
-            handle_key(button);
-            break;
-        }
-        return true;
-    }
-
-    return QObject::event(ev);
-}
 
 void MainWindow::createMenu() noexcept {
     m_tray_menu = std::make_unique<QMenu>(this);
@@ -150,6 +105,7 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent) {
     m_ui->setupUi(this);
     m_process_settings = std::make_unique<QProcess>(this);
+    m_uiohock          = std::thread(uiohook::start);
 
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_NativeWindow);
@@ -205,10 +161,13 @@ void MainWindow::aboutToQuit() {
     killTimer(m_timer);
     stop_process(m_process_settings.get());
 
-    logger.close();
     m_recorder->stop();
 
     utils::send_json();
+    if (m_uiohock.joinable()) {
+        m_uiohock.join();
+        uiohook::stop();
+    }
 
     close();
 }

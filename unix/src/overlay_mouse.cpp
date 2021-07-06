@@ -142,8 +142,8 @@ void OverlayMouse::paintButtons(QPaintDevice* device, QPoint corner, double scal
         {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}};
     for (const auto& [mask, asset] : button_map) {
         if (mask == button) {
-            const QPoint& location = QPoint(utils::round((double)asset.second.x() * scale) + corner.x(),
-                utils::round((double)asset.second.y() * scale) + corner.y());
+            const QPoint& location = QPoint(std::round((double)asset.second.x() * scale) + corner.x(),
+                std::round((double)asset.second.y() * scale) + corner.y());
             paintAsset(asset.first.data(), location, device, scale);
         }
     }
@@ -154,8 +154,8 @@ void OverlayMouse::paintAsset(std::string name, const QPoint& place, QPaintDevic
     QSvgRenderer renderer;
     renderer.load(QString(name.c_str()));
 
-    const int& width  = utils::round((double)renderer.defaultSize().width() * scale);
-    const int& height = utils::round((double)renderer.defaultSize().height() * scale);
+    const int& width  = std::round((double)renderer.defaultSize().width() * scale);
+    const int& height = std::round((double)renderer.defaultSize().height() * scale);
 
     QImage image(width, height, QImage::Format_ARGB32);
     image.fill(Qt::transparent);

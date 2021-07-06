@@ -19,6 +19,8 @@
 #ifndef UIOHOOK_HELPER_HPP
 #define UIOHOOK_HELPER_HPP
 
+#include <vnepogodin/buffer.hpp>
+
 #include <atomic>
 #include <mutex>
 

@@ -79,7 +79,7 @@ namespace utils {
         return result;
     }
 
-    static inline int get_propervalue(const nlohmann::json& value) {
+    static inline int get_proper_value(const nlohmann::json& value) {
         if (value.is_string()) {
             const auto& str = value.get<std::string>();
             return parse_int(str);
@@ -91,7 +91,7 @@ namespace utils {
     static inline void load_key(nlohmann::json& json, T* object, const std::string& key) {
         if (json.contains(key)) {
             if constexpr (std::is_same<T, QCheckBox>::value) {
-                object->setChecked(get_propervalue(json[key]));
+                object->setChecked(get_proper_value(json[key]));
                 return;
             } else if constexpr (std::is_same<T, QComboBox>::value) {
                 const auto& value = json[key].get<std::string>();

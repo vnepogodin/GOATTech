@@ -60,10 +60,11 @@ add_subdirectory(thirdparty)
 ##
 add_executable(${PROJECT_NAME}
     include/vnepogodin/buffer.hpp
+    include/vnepogodin/uiohook_helper.hpp src/uiohook_helper.cpp
+    include/vnepogodin/input_data.hpp src/input_data.cpp
     include/vnepogodin/recorder.hpp
     include/vnepogodin/logger.hpp
     include/vnepogodin/utils.hpp
-    include/vnepogodin/thirdparty/json.hpp
     include/vnepogodin/overlay.hpp src/overlay.cpp
     include/vnepogodin/overlay_mouse.hpp src/overlay_mouse.cpp
     include/vnepogodin/mainwindow.hpp src/mainwindow.cpp

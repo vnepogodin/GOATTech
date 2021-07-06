@@ -21,8 +21,7 @@
 
 #include <vnepogodin/overlay.hpp>
 #include <vnepogodin/overlay_mouse.hpp>
-#include <vnepogodin/thirdparty/HTTPRequest.hpp>
-#include <vnepogodin/thirdparty/json.hpp>
+#include <vnepogodin/uiohook_helper.hpp>
 
 #include <charconv>
 #include <chrono>
@@ -30,25 +29,28 @@
 #include <string_view>
 #include <unordered_map>
 
+#include <vnepogodin/thirdparty/HTTPRequest.hpp>
+#include <vnepogodin/thirdparty/json.hpp>
+
 namespace vnepogodin {
 namespace utils {
     namespace key_code {
-        static constexpr std::uint8_t LBUTTON  = 0x01;
-        static constexpr std::uint8_t RBUTTON  = 0x02;
-        static constexpr std::uint8_t MBUTTON  = 0x04;
-        static constexpr std::uint8_t X1BUTTON = 0x05;
-        static constexpr std::uint8_t X2BUTTON = 0x06;
+        static constexpr std::uint8_t LBUTTON  = MOUSE_BUTTON1;
+        static constexpr std::uint8_t RBUTTON  = MOUSE_BUTTON3;
+        static constexpr std::uint8_t MBUTTON  = MOUSE_BUTTON2;
+        static constexpr std::uint8_t X1BUTTON = MOUSE_BUTTON4;
+        static constexpr std::uint8_t X2BUTTON = MOUSE_BUTTON5;
 
-        static constexpr std::uint32_t W         = 0x57;
-        static constexpr std::uint32_t A         = 0x41;
-        static constexpr std::uint32_t S         = 0x53;
-        static constexpr std::uint32_t D         = 0x44;
-        static constexpr std::uint32_t Q         = 0x51;
-        static constexpr std::uint32_t E         = 0x45;
-        static constexpr std::uint32_t SHIFT     = 0xA0;
-        static constexpr std::uint32_t CONTROL   = 0xA2;
-        static constexpr std::uint32_t SPACEBAR  = 0x20;
-        static constexpr std::uint32_t UNDEFINED = 0x07;
+        static constexpr std::uint32_t W         = VC_W;
+        static constexpr std::uint32_t A         = VC_A;
+        static constexpr std::uint32_t S         = VC_S;
+        static constexpr std::uint32_t D         = VC_D;
+        static constexpr std::uint32_t Q         = VC_Q;
+        static constexpr std::uint32_t E         = VC_E;
+        static constexpr std::uint32_t SHIFT     = VC_SHIFT_L;
+        static constexpr std::uint32_t CONTROL   = VC_CONTROL_L;
+        static constexpr std::uint32_t SPACEBAR  = VC_SPACE;
+        static constexpr std::uint32_t UNDEFINED = VC_UNDEFINED;
     };  // namespace key_code
 
     static const std::unordered_map<std::uint32_t, std::string_view> code_list = {
@@ -67,17 +69,13 @@ namespace utils {
         {vnepogodin::utils::key_code::X1BUTTON, "x_button"},
         {vnepogodin::utils::key_code::X2BUTTON, "x_button"}};
 
-    inline int round(const double& val) noexcept {
-        return (val < 0) ? static_cast<int>(std::ceil(val - 0.5)) : static_cast<int>(std::floor(val + 0.5));
-    }
-
     static inline int parse_int(const std::string_view& str) {
         int result = 0;
         std::from_chars(str.data(), str.data() + str.size(), result);
         return result;
     }
 
-    static inline int get_propervalue(const nlohmann::json& value) {
+    static inline int get_proper_value(const nlohmann::json& value) {
         if (value.is_string()) {
             const auto& str = value.get<std::string>();
             return parse_int(str);
@@ -87,26 +85,30 @@ namespace utils {
 
     template <class T>
     inline void load_key(const nlohmann::json& json, T* object, const std::string& key) noexcept(false) {
-        constexpr bool is_valid = std::is_same<T, Overlay>::value || std::is_same<T, OverlayMouse>::value;
-        if (json.contains(key)) {
-            if constexpr (is_valid) {
-                object->setVisible(!get_propervalue(json[key]));
-                return;
-            }
-            throw std::runtime_error("Unknown type");
-        }
+        [[maybe_unused]] constexpr bool is_valid = std::is_same<T, Overlay>::value || std::is_same<T, OverlayMouse>::value;
+        static_assert(is_valid, "Unknown type");
 
-        if constexpr (is_valid) {
-            if constexpr (std::is_same<T, Overlay>::value)
-                object->setVisible(0);
+        if (json.contains(key)) {
+            object->setVisible(!get_proper_value(json[key]));
             return;
         }
-        throw std::runtime_error("Unknown type");
+
+        if constexpr (std::is_same<T, Overlay>::value) {
+            object->setVisible(0);
+        }
     }
 
     inline std::uint32_t get_key() noexcept {
-        //for (const auto& code : code_list) {
-        //}
+        uiohook_event* event = uiohook::buf.read<uiohook_event>();
+        if (event) {
+            const auto& key = event->data.mouse.button;
+            for (const auto& code : code_list) {
+                if (code.first == key) {
+                    return key;
+                }
+            }
+        }
+
         return key_code::UNDEFINED;
     }
 

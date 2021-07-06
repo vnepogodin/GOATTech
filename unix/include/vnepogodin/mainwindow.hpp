@@ -38,15 +38,13 @@ class MainWindow final : public QMainWindow {
     explicit MainWindow(QWidget* parent = nullptr);
     virtual ~MainWindow() = default;
 
- protected:
-    virtual bool event(QEvent* ev) override;
-
  public slots:
     void iconActivated(const QSystemTrayIcon::ActivationReason&);
     void aboutToQuit();
 
  private:
     int m_timer{};
+    std::thread m_uiohock;
 
     std::array<std::uint8_t, 2> m_activated;
 
