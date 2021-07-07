@@ -130,7 +130,7 @@ Overlay::~Overlay() {
 }
 
 void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    const auto& button = utils::get_key();
+    const auto& button = utils::key_code::UNDEFINED;
 
     static constexpr frozen::unordered_map<uint32_t, std::pair<std::string_view, QPoint>, 9> button_map = {
         {utils::key_code::W, {"w_button", {384, 0}}},

@@ -19,6 +19,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <vnepogodin/input_data.hpp>
 #include <vnepogodin/overlay.hpp>
 #include <vnepogodin/overlay_mouse.hpp>
 #include <vnepogodin/uiohook_helper.hpp>
@@ -98,18 +99,14 @@ namespace utils {
         }
     }
 
-    constexpr std::uint32_t get_key() noexcept {
+    constexpr bool handle_event() noexcept {
         uiohook_event* event = uiohook::buf.read<uiohook_event>();
         if (event) {
-            const auto& key = event->data.mouse.button;
-            for (const auto& code : code_list) {
-                if (code.first == key) {
-                    return key;
-                }
-            }
+            local_data::data.dispatch_uiohook_event(event);
+            return true;
         }
 
-        return key_code::UNDEFINED;
+        return false;
     }
 
     inline void send_json() noexcept {

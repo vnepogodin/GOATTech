@@ -16,6 +16,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include <vnepogodin/input_data.hpp>
 #include <vnepogodin/overlay_mouse.hpp>
 #include <vnepogodin/utils.hpp>
 
@@ -132,19 +133,24 @@ OverlayMouse::~OverlayMouse() {
 }
 
 void OverlayMouse::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    const auto& button = utils::get_key();
-
     static constexpr frozen::unordered_map<uint8_t, std::pair<std::string_view, QPoint>, 5> button_map = {
         {utils::key_code::LBUTTON, {"left_button", {10, 0}}},
         {utils::key_code::RBUTTON, {"right_button", {512, 0}}},
         {utils::key_code::MBUTTON, {"middle_button", {415, 273}}},
         {utils::key_code::X1BUTTON, {"x_button", {2, 735}}},
         {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}};
-    for (const auto& [mask, asset] : button_map) {
-        if (mask == button) {
-            const QPoint& location = QPoint(std::round((double)asset.second.x() * scale) + corner.x(),
-                std::round((double)asset.second.y() * scale) + corner.y());
-            paintAsset(asset.first.data(), location, device, scale);
+
+    (void)utils::handle_event();
+    for (const auto& [button, value] : local_data::data.mouse) {
+        if (!value) {
+            continue;
+        }
+        for (const auto& [mask, asset] : button_map) {
+            if (mask == button) {
+                const QPoint& location = QPoint(std::round((double)asset.second.x() * scale) + corner.x(),
+                    std::round((double)asset.second.y() * scale) + corner.y());
+                paintAsset(asset.first.data(), location, device, scale);
+            }
         }
     }
 }
