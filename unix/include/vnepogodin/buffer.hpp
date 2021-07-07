@@ -96,7 +96,7 @@ class buffer {
         if (m_write_pos + sizeof(T) >= m_buf.size())
             resize(m_write_pos + sizeof(T) * 1.5);
         memcpy(&m_buf[m_write_pos], &val, sizeof(T));
-        auto* result = bit_cast<T*>(&m_buf[m_write_pos]);
+        auto* result = reinterpret_cast<T*>(&m_buf[m_write_pos]);
         m_write_pos += sizeof(T);
         return result;
     }
@@ -104,7 +104,7 @@ class buffer {
     template <class T>
     constexpr auto read() noexcept -> T* {
         if (sizeof(T) + m_read_pos < size()) {
-            auto* result = bit_cast<T*>(&m_buf[m_read_pos]);
+            auto* result = reinterpret_cast<T*>(&m_buf[m_read_pos]);
             m_read_pos += sizeof(T);
             return result;
         }
