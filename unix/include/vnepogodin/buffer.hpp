@@ -22,10 +22,34 @@
 #include <cstdint>
 #include <cstring>
 
+#if __has_include(<bit>) && __cplusplus >= 202002L
 #include <bit>
+#endif
 #include <vector>
 
 namespace vnepogodin {
+#if __cpp_lib_bit_cast
+
+using std::bit_cast;
+
+#else
+
+//  mimic: std::bit_cast, C++20
+template <
+    typename To,
+    typename From,
+    std::enable_if_t<
+        sizeof(From) == sizeof(To) && is_trivially_copyable<To>::value &&
+            is_trivially_copyable<From>::value,
+        int> = 0>
+To bit_cast(const From& src) noexcept {
+  aligned_storage_for_t<To> storage;
+  std::memcpy(&storage, &src, sizeof(From));
+  return reinterpret_cast<To&>(storage);
+}
+
+#endif
+
 class buffer {
  public:
     using value_type      = std::uint8_t;
@@ -60,7 +84,7 @@ class buffer {
 
     inline void read(void** dest, const std::size_t& size) const noexcept {
         if (size + m_read_pos < m_buf.size()) {
-            *dest = std::bit_cast<void*>(&m_buf[m_read_pos]);
+            *dest = bit_cast<void*>(&m_buf[m_read_pos]);
         }
     }
 
@@ -69,7 +93,7 @@ class buffer {
         if (m_write_pos + sizeof(T) >= m_buf.size())
             resize(m_write_pos + sizeof(T) * 1.5);
         memcpy(&m_buf[m_write_pos], &val, sizeof(T));
-        auto* result = std::bit_cast<T*>(&m_buf[m_write_pos]);
+        auto* result = bit_cast<T*>(&m_buf[m_write_pos]);
         m_write_pos += sizeof(T);
         return result;
     }
@@ -77,7 +101,7 @@ class buffer {
     template <class T>
     constexpr auto read() noexcept -> T* {
         if (sizeof(T) + m_read_pos < size()) {
-            auto* result = std::bit_cast<T*>(&m_buf[m_read_pos]);
+            auto* result = bit_cast<T*>(&m_buf[m_read_pos]);
             m_read_pos += sizeof(T);
             return result;
         }
