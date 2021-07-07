@@ -75,10 +75,9 @@ add_executable(${PROJECT_NAME}
 add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
-#include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia uiohook ${CMAKE_THREAD_LIBS_INIT})
-include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia uiohook frozen::frozen ${CMAKE_THREAD_LIBS_INIT})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_custom_target(run
     COMMAND ./${PROJECT_NAME}

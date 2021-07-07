@@ -134,7 +134,7 @@ OverlayMouse::~OverlayMouse() {
 void OverlayMouse::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
     const auto& button = utils::get_key();
 
-    const std::unordered_map<uint8_t, std::pair<std::string_view, QPoint>> button_map = {
+    static constexpr frozen::unordered_map<uint8_t, std::pair<std::string_view, QPoint>, 5> button_map = {
         {utils::key_code::LBUTTON, {"left_button", {10, 0}}},
         {utils::key_code::RBUTTON, {"right_button", {512, 0}}},
         {utils::key_code::MBUTTON, {"middle_button", {415, 273}}},

@@ -61,7 +61,7 @@ class buffer {
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    explicit buffer(const std::size_t& len = 0) {
+    explicit buffer(const std::size_t& len = 0) noexcept {
         if (len > 0) {
             resize(len);
         }
@@ -74,11 +74,11 @@ class buffer {
         m_write_pos = 0;
     }
 
-    void resize(const std::size_t& new_size) noexcept {
+    inline void resize(const std::size_t& new_size) noexcept {
         m_buf.resize(new_size);
     }
 
-    void write(const void* value, const std::size_t& size) noexcept {
+    inline void write(const void* value, const std::size_t& size) noexcept {
         if (m_write_pos + size >= m_buf.size())
             resize(m_write_pos + size * 1.5);
         memcpy(&m_buf[m_write_pos], value, size);
@@ -122,8 +122,8 @@ class buffer {
     inline pointer data() noexcept { return m_buf.data(); }
 
  private:
-    std::size_t m_write_pos = 0;
-    std::size_t m_read_pos  = 0;
+    std::size_t m_write_pos{};
+    std::size_t m_read_pos{};
 
     std::vector<std::uint8_t> m_buf{};
 };

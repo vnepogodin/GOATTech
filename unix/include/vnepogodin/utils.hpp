@@ -25,10 +25,9 @@
 
 #include <charconv>
 #include <chrono>
-#include <exception>
 #include <string_view>
-#include <unordered_map>
 
+#include <frozen/unordered_map.h>
 #include <vnepogodin/thirdparty/HTTPRequest.hpp>
 #include <vnepogodin/thirdparty/json.hpp>
 
@@ -53,38 +52,39 @@ namespace utils {
         static constexpr std::uint32_t UNDEFINED = VC_UNDEFINED;
     };  // namespace key_code
 
-    static const std::unordered_map<std::uint32_t, std::string_view> code_list = {
-        {vnepogodin::utils::key_code::W, "w_button"},
-        {vnepogodin::utils::key_code::A, "a_button"},
-        {vnepogodin::utils::key_code::S, "s_button"},
-        {vnepogodin::utils::key_code::D, "d_button"},
-        {vnepogodin::utils::key_code::Q, "q_button"},
-        {vnepogodin::utils::key_code::E, "e_button"},
-        {vnepogodin::utils::key_code::SHIFT, "shift_button"},
-        {vnepogodin::utils::key_code::CONTROL, "ctrl_button"},
-        {vnepogodin::utils::key_code::SPACEBAR, "space_button"},
-        {vnepogodin::utils::key_code::LBUTTON, "left_button"},
-        {vnepogodin::utils::key_code::RBUTTON, "right_button"},
-        {vnepogodin::utils::key_code::MBUTTON, "middle_button"},
-        {vnepogodin::utils::key_code::X1BUTTON, "x_button"},
-        {vnepogodin::utils::key_code::X2BUTTON, "x_button"}};
+    namespace {
+        static constexpr frozen::unordered_map<std::uint32_t, std::string_view, 14> code_list = {
+            {vnepogodin::utils::key_code::W, "w_button"},
+            {vnepogodin::utils::key_code::A, "a_button"},
+            {vnepogodin::utils::key_code::S, "s_button"},
+            {vnepogodin::utils::key_code::D, "d_button"},
+            {vnepogodin::utils::key_code::Q, "q_button"},
+            {vnepogodin::utils::key_code::E, "e_button"},
+            {vnepogodin::utils::key_code::SHIFT, "shift_button"},
+            {vnepogodin::utils::key_code::CONTROL, "ctrl_button"},
+            {vnepogodin::utils::key_code::SPACEBAR, "space_button"},
+            {vnepogodin::utils::key_code::LBUTTON, "left_button"},
+            {vnepogodin::utils::key_code::RBUTTON, "right_button"},
+            {vnepogodin::utils::key_code::MBUTTON, "middle_button"},
+            {vnepogodin::utils::key_code::X1BUTTON, "x_button"},
+            {vnepogodin::utils::key_code::X2BUTTON, "x_button"}};
 
-    static inline int parse_int(const std::string_view& str) {
-        int result = 0;
-        std::from_chars(str.data(), str.data() + str.size(), result);
-        return result;
-    }
-
-    static inline int get_proper_value(const nlohmann::json& value) {
-        if (value.is_string()) {
-            const auto& str = value.get<std::string>();
-            return parse_int(str);
+        static inline int parse_int(const std::string_view& str) {
+            int result = 0;
+            std::from_chars(str.data(), str.data() + str.size(), result);
+            return result;
         }
-        return value.get<int>();
-    }
 
+        static inline int get_proper_value(const nlohmann::json& value) {
+            if (value.is_string()) {
+                const auto& str = value.get<std::string>();
+                return parse_int(str);
+            }
+            return value.get<int>();
+        }
+    }  // namespace
     template <class T>
-    inline void load_key(const nlohmann::json& json, T* object, const std::string& key) noexcept(false) {
+    constexpr void load_key(const nlohmann::json& json, T* object, const std::string& key) noexcept {
         [[maybe_unused]] constexpr bool is_valid = std::is_same<T, Overlay>::value || std::is_same<T, OverlayMouse>::value;
         static_assert(is_valid, "Unknown type");
 
@@ -98,7 +98,7 @@ namespace utils {
         }
     }
 
-    inline std::uint32_t get_key() noexcept {
+    constexpr std::uint32_t get_key() noexcept {
         uiohook_event* event = uiohook::buf.read<uiohook_event>();
         if (event) {
             const auto& key = event->data.mouse.button;
