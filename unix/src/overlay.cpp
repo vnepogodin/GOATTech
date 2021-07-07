@@ -130,8 +130,6 @@ Overlay::~Overlay() {
 }
 
 void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    const auto& button = utils::key_code::UNDEFINED;
-
     static constexpr frozen::unordered_map<uint32_t, std::pair<std::string_view, QPoint>, 9> button_map = {
         {utils::key_code::W, {"w_button", {384, 0}}},
         {utils::key_code::A, {"a_button", {169, 182}}},
@@ -142,11 +140,19 @@ void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
         {utils::key_code::SHIFT, {"shift_button", {0, 182}}},
         {utils::key_code::CONTROL, {"ctrl_button", {23, 360}}},
         {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
-    for (const auto& [mask, asset] : button_map) {
-        if (mask == button) {
-            const QPoint& location = QPoint(std::round((double)asset.second.x() * scale) + corner.x(),
-                std::round((double)asset.second.y() * scale) + corner.y());
-            paintAsset(asset.first.data(), location, device, scale);
+
+    (void)utils::handle_event();
+
+    for (const auto& [button, value] : local_data::data.keyboard) {
+        if (!value) {
+            continue;
+        }
+        for (const auto& [mask, asset] : button_map) {
+            if (mask == button) {
+                const QPoint& location = QPoint(std::round((double)asset.second.x() * scale) + corner.x(),
+                    std::round((double)asset.second.y() * scale) + corner.y());
+                paintAsset(asset.first.data(), location, device, scale);
+            }
         }
     }
 }
