@@ -142,7 +142,6 @@ void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
         {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
 
     (void)utils::handle_event();
-
     for (const auto& [button, value] : local_data::data.keyboard) {
         if (!value) {
             continue;
