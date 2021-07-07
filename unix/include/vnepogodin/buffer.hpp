@@ -34,18 +34,21 @@ using std::bit_cast;
 
 #else
 
+template <typename T>
+using aligned_storage_for_t =
+    typename std::aligned_storage<sizeof(T), alignof(T)>::type;
+
 //  mimic: std::bit_cast, C++20
 template <
     typename To,
     typename From,
     std::enable_if_t<
-        sizeof(From) == sizeof(To) && is_trivially_copyable<To>::value &&
-            is_trivially_copyable<From>::value,
+        sizeof(From) == sizeof(To) && std::is_trivially_copyable<To>::value && std::is_trivially_copyable<From>::value,
         int> = 0>
-To bit_cast(const From& src) noexcept {
-  aligned_storage_for_t<To> storage;
-  std::memcpy(&storage, &src, sizeof(From));
-  return reinterpret_cast<To&>(storage);
+[[nodiscard]] To bit_cast(const From& src) noexcept {
+    aligned_storage_for_t<To> storage;
+    std::memcpy(&storage, &src, sizeof(From));
+    return reinterpret_cast<To&>(storage);
 }
 
 #endif
