@@ -158,6 +158,7 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 void MainWindow::aboutToQuit() {
+    // TODO: Add global logger
     killTimer(m_timer);
     stop_process(m_process_settings.get());
 
