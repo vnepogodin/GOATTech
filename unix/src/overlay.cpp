@@ -141,6 +141,7 @@ void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
         {utils::key_code::CONTROL, {"ctrl_button", {23, 360}}},
         {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
 
+    std::lock_guard<std::mutex> lock(local_data::data_mutex);
     (void)utils::handle_event();
     for (const auto& [button, value] : local_data::data.keyboard) {
         if (!value) {

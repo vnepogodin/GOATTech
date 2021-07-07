@@ -140,6 +140,7 @@ void OverlayMouse::paintButtons(QPaintDevice* device, QPoint corner, double scal
         {utils::key_code::X1BUTTON, {"x_button", {2, 735}}},
         {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}};
 
+    std::lock_guard<std::mutex> lock(local_data::data_mutex);
     (void)utils::handle_event();
     for (const auto& [button, value] : local_data::data.mouse) {
         if (!value) {
