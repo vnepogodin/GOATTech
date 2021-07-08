@@ -35,7 +35,6 @@ fi
 
 _buildpath="build"
 _buildtype="Debug"
-_cpuCount=$(grep -c -w ^processor /proc/cpuinfo)
 for i in "$@"; do
   case $i in
     -t=*|--buildtype=*)
@@ -78,7 +77,7 @@ set -e
 
 cd "\`dirname "\$0"\`"
 
-cmake --build ${_buildpath}/${_buildtype} --parallel ${_cpuCount}
+cmake --build ${_buildpath}/${_buildtype} --parallel 10
 EOF
 
 chmod +x ./build.sh
