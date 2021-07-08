@@ -10,7 +10,41 @@ env:
   BUILD_TYPE: Debug
 
 jobs:
-  build:
+  ci_test_clang:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Ninja
+        run: |
+          sudo apt update
+          sudo apt install ninja-build
+      - name: Install Clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 11
+          sudo apt-get install clang-tools-11
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+      - name: Install Dependencies
+        run: |
+          sudo apt install libxtst-dev \
+                           libxt-dev \
+                           libxinerama-dev \
+                           libx11-xcb-dev \
+                           libxkbcommon-dev \
+                           libxkbcommon-x11-dev \
+                           libxkbfile-dev
+
+      - name: Configure CMake
+        run: ./configure.sh
+      - name: Build
+        run: ./build.sh
+
+  ci_test_gcc:
     runs-on: ubuntu-latest
 
     steps:
