@@ -1,6 +1,7 @@
 # GOATTech
 
-[![CI](https://github.com/vnepogodin/GOATTech/workflows/CI/badge.svg)](https://github.com/vnepogodin/GOATTech/actions/workflows/ci.yml)
+[![Ubuntu](https://github.com/vnepogodin/GOATTech/workflows/Ubuntu/badge.svg)](https://github.com/vnepogodin/GOATTech/actions/workflows/ubuntu.yml)
+[![macOS](https://github.com/vnepogodin/GOATTech/workflows/macOS/badge.svg)](https://github.com/vnepogodin/GOATTech/actions/workflows/macos.yml)
 [![license](https://img.shields.io/github/license/vnepogodin/GOATTech.svg)](https://github.com/vnepogodin/GOATTech/blob/develop/LICENSE)
 
 A input overlay which working without OBS Studio.
