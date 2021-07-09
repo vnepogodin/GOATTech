@@ -24,11 +24,9 @@
 
 #include <QByteArray>
 #include <QDesktopWidget>
-#include <QKeyEvent>
 #include <QMetaType>
 #include <QSettings>
 #include <QString>
-#include <QVariant>
 
 using namespace vnepogodin;
 
@@ -61,7 +59,7 @@ void MainWindow::iconActivated(const QSystemTrayIcon::ActivationReason& reason) 
     }
 }
 
-static void stop_process(QProcess* proc) {
+static inline void stop_process(QProcess* proc) {
     if (proc->state() == QProcess::Running) {
         proc->terminate();
         if (!proc->waitForFinished()) {
@@ -113,7 +111,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_tray_icon = std::make_unique<QSystemTrayIcon>(this);
     m_process_settings->setProgram("GOATTech-settings");
-    m_timer = startTimer(100);
     setMouseTracking(true);
 
     // Set window position
@@ -158,8 +155,6 @@ MainWindow::MainWindow(QWidget* parent)
 }
 
 void MainWindow::closeEvent(QCloseEvent* event) {
-    // TODO: Add global logger
-    killTimer(m_timer);
     stop_process(m_process_settings.get());
     if (m_recorder) {
         m_recorder->stop();

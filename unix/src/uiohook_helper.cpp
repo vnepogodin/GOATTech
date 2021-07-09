@@ -77,18 +77,22 @@ void dispatch_proc(uiohook_event* const event) {
         hook_state = true;
         break;
     case EVENT_MOUSE_PRESSED:
+        buf.write<uiohook_event>(*event);
+        handle_key(event->data.mouse.button);
+        break;
+    case EVENT_KEY_PRESSED:
+        buf.write<uiohook_event>(*event);
+        handle_key(event->data.keyboard.keycode);
+        break;
     case EVENT_MOUSE_RELEASED:
     case EVENT_MOUSE_CLICKED:
     case EVENT_MOUSE_MOVED:
     case EVENT_MOUSE_DRAGGED:
         buf.write<uiohook_event>(*event);
-        handle_key(event->data.mouse.button);
         break;
     case EVENT_KEY_TYPED:
-    case EVENT_KEY_PRESSED:
     case EVENT_KEY_RELEASED:
         buf.write<uiohook_event>(*event);
-        handle_key(event->data.keyboard.keycode);
         break;
     default:
         break;

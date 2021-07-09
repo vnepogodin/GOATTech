@@ -45,7 +45,6 @@ class MainWindow final : public QMainWindow {
     void closeEvent(QCloseEvent*) override;
 
  private:
-    int m_timer{};
     std::thread m_uiohock;
 
     std::array<std::uint8_t, 2> m_activated;
