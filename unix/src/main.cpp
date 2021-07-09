@@ -45,7 +45,6 @@ auto main(int argc, char** argv) -> std::int32_t {
 
     // Set application attributes
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     QApplication a(argc, argv);
     vnepogodin::MainWindow w;
     w.showFullScreen();

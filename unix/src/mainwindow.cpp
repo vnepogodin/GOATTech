@@ -154,21 +154,22 @@ MainWindow::MainWindow(QWidget* parent)
     m_activated[1] = (m_ui->mouse->isHidden()) ? 2 : 0;
 
     connect(m_tray_icon.get(), &QSystemTrayIcon::activated, this, &MainWindow::iconActivated);
-    connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(aboutToQuit()));
+    connect(QCoreApplication::instance(), &QApplication::aboutToQuit, this, &MainWindow::close);
 }
 
-void MainWindow::aboutToQuit() {
+void MainWindow::closeEvent(QCloseEvent* event) {
     // TODO: Add global logger
     killTimer(m_timer);
     stop_process(m_process_settings.get());
-
-    m_recorder->stop();
+    if (m_recorder) {
+        m_recorder->stop();
+    }
 
     utils::send_json();
     if (m_uiohock.joinable()) {
-        m_uiohock.join();
         uiohook::stop();
+        m_uiohock.join();
     }
 
-    close();
+    QWidget::closeEvent(event);
 }

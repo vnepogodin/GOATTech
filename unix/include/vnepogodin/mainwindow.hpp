@@ -40,7 +40,9 @@ class MainWindow final : public QMainWindow {
 
  public slots:
     void iconActivated(const QSystemTrayIcon::ActivationReason&);
-    void aboutToQuit();
+
+ protected:
+    void closeEvent(QCloseEvent*) override;
 
  private:
     int m_timer{};
