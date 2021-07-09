@@ -20,6 +20,7 @@
 #define OVERLAY_HPP
 
 #include <ui_overlay.h>
+#include <vnepogodin/input_data.hpp>
 
 #include <thread>
 
@@ -51,8 +52,10 @@ class Overlay final : public QWidget {
     bool keyboardConnected = false;
     const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
     std::thread poll;
+    std::mutex data_mutex;
 
-    std::unique_ptr<Ui::Overlay> ui = std::make_unique<Ui::Overlay>();
+    std::unique_ptr<input_data> handler = std::make_unique<input_data>();
+    std::unique_ptr<Ui::Overlay> ui     = std::make_unique<Ui::Overlay>();
 
     /**
    * @fn connectKeyboard

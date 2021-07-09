@@ -20,6 +20,7 @@
 #define OVERLAY_MOUSE_HPP
 
 #include <ui_overlay_mouse.h>
+#include <vnepogodin/input_data.hpp>
 
 #include <thread>
 
@@ -51,7 +52,9 @@ class OverlayMouse final : public QWidget {
     bool mouseConnected    = false;
     const int refresh_rate = 500;  // Frequency of mouse input checking in hertz
     std::thread poll;
+    std::mutex data_mutex;
 
+    std::unique_ptr<input_data> handler  = std::make_unique<input_data>();
     std::unique_ptr<Ui::OverlayMouse> ui = std::make_unique<Ui::OverlayMouse>();
 
     /**

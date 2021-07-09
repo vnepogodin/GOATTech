@@ -99,11 +99,10 @@ namespace utils {
         }
     }
 
-    constexpr bool handle_event() noexcept {
-        // TODO: use one handler per overlay
+    constexpr bool handle_event(input_data* handler) noexcept {
         uiohook_event* event = uiohook::buf.read<uiohook_event>();
         if (event) {
-            local_data::data.dispatch_uiohook_event(event);
+            handler->dispatch_uiohook_event(event);
             return true;
         }
 
