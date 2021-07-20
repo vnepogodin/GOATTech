@@ -41,7 +41,7 @@ std::string_view get_process_list() {
 
     // Now walk the snapshot of processes, and
     // display information about each process in turn
-    const std::unordered_map<std::string_view, std::string_view> process_map = {
+    const std::unordered_map<std::string_view, std::string_view>& process_map = {
         {"dota", "Dota"},
         {"csgo", "Counter-Strike: Global Offensive"}};
     do {
@@ -98,7 +98,7 @@ class Logger final {
         }
     }
 
-    inline auto add_key(const std::string_view value) -> void {
+    inline auto add_key(const std::string_view& value) -> void {
         m_json["keys"].push_back(value);
     }
 
