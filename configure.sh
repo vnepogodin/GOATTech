@@ -34,7 +34,7 @@ fi
 
 
 _buildpath="build"
-_buildtype="Debug"
+_buildtype="RelWithDebInfo"
 for i in "$@"; do
   case $i in
     -t=*|--buildtype=*)

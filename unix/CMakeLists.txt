@@ -10,7 +10,7 @@ project(overlay
         VERSION 0.9.3)
 
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 message(STATUS "BUILD: ${CMAKE_BUILD_TYPE}")
 
