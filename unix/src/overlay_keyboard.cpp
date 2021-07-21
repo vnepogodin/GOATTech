@@ -16,28 +16,32 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <vnepogodin/overlay_mouse.hpp>
+#include <vnepogodin/overlay_keyboard.hpp>
 #include <vnepogodin/utils.hpp>
 
 #include <cmath>
 
 using namespace vnepogodin;
 
-const char* OverlayMouse::getSvgPath() const noexcept {
-    return ":mouse/";
+const char* OverlayKeyboard::getSvgPath() const noexcept {
+    return ":keyboard/";
 }
 
-void OverlayMouse::paintButtons(QPaintDevice* device, const QPoint& corner, const double& scale) {
-    static constexpr frozen::unordered_map<uint8_t, std::pair<std::string_view, QPoint>, 5> button_map = {
-        {utils::key_code::LBUTTON, {"left_button", {10, 0}}},
-        {utils::key_code::RBUTTON, {"right_button", {512, 0}}},
-        {utils::key_code::MBUTTON, {"middle_button", {415, 273}}},
-        {utils::key_code::X1BUTTON, {"x_button", {2, 735}}},
-        {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}};
+void OverlayKeyboard::paintButtons(QPaintDevice* device, const QPoint& corner, const double& scale) {
+    static constexpr frozen::unordered_map<uint32_t, std::pair<std::string_view, QPoint>, 9> button_map = {
+        {utils::key_code::W, {"w_button", {384, 0}}},
+        {utils::key_code::A, {"a_button", {169, 182}}},
+        {utils::key_code::S, {"s_button", {338, 182}}},
+        {utils::key_code::D, {"d_button", {508, 182}}},
+        {utils::key_code::Q, {"q_button", {210, 0}}},
+        {utils::key_code::E, {"e_button", {552, 0}}},
+        {utils::key_code::SHIFT, {"shift_button", {0, 182}}},
+        {utils::key_code::CONTROL, {"ctrl_button", {23, 360}}},
+        {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
 
     std::lock_guard<std::mutex> lock(data_mutex);
     (void)utils::handle_event(handler.get());
-    for (const auto& [button, value] : handler->mouse) {
+    for (const auto& [button, value] : handler->keyboard) {
         if (!value) {
             continue;
         }
@@ -49,22 +53,4 @@ void OverlayMouse::paintButtons(QPaintDevice* device, const QPoint& corner, cons
             }
         }
     }
-}
-
-void OverlayMouse::paintTouch(QPaintDevice* device, QPoint corner, double scale) {
-    QPoint tl{50, 50};
-    float height = 139, width = 139;
-
-#if 0
-    POINT ptOld;
-    GetCursorPos(&ptOld);
-
-    const QPoint& location = QPoint(
-        (int)utils::round(((double)tl.x() + (double)((unsigned)ptOld.x % (unsigned)width)) * scale) + corner.rx(),
-        (int)utils::round(((double)tl.y() + (double)((unsigned)ptOld.y % (unsigned)height)) * scale) + corner.ry());
-#ifndef NDEBUG
-    std::cout << "\nX: " << location.x() << " Y:" << location.y() << '\n';
-#endif
-    paintAsset("cursor", location, device, scale);
-#endif
 }

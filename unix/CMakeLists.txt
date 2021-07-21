@@ -67,6 +67,7 @@ add_executable(${PROJECT_NAME}
     include/vnepogodin/utils.hpp
     include/vnepogodin/overlay.hpp src/overlay.cpp
     include/vnepogodin/overlay_mouse.hpp src/overlay_mouse.cpp
+    include/vnepogodin/overlay_keyboard.hpp src/overlay_keyboard.cpp
     include/vnepogodin/mainwindow.hpp src/mainwindow.cpp
 
     src/main.cpp ../assets/overlay.qrc

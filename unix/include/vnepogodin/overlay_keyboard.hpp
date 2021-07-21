@@ -16,8 +16,8 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#ifndef OVERLAY_MOUSE_HPP
-#define OVERLAY_MOUSE_HPP
+#ifndef OVERLAY_KEYBOARD_HPP
+#define OVERLAY_KEYBOARD_HPP
 
 #include <vnepogodin/input_data.hpp>
 #include <vnepogodin/overlay.hpp>
@@ -25,11 +25,11 @@
 #include <QWidget>
 
 namespace vnepogodin {
-class OverlayMouse final : public Overlay {
+class OverlayKeyboard final : public Overlay {
     Q_OBJECT
 
  public:
-    explicit OverlayMouse(QWidget* parent = nullptr) : Overlay(parent) { }
+    explicit OverlayKeyboard(QWidget* parent = nullptr) : Overlay(parent) { }
 
  private:
     /** Private Members */
@@ -43,12 +43,7 @@ class OverlayMouse final : public Overlay {
     * Helper function for paintEvent that paints buttons that are on.
     */
     void paintButtons(QPaintDevice* device, const QPoint& corner, const double& scale) override;
-
-    /**
-    * Paints cursor onto touch points.
-    */
-    void paintTouch(QPaintDevice* device, QPoint corner, double scale);
 };
 }  // namespace vnepogodin
 
-#endif  // OVERLAY_MOUSE_HPP
+#endif  // OVERLAY_KEYBOARD_HPP

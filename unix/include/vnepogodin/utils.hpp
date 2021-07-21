@@ -20,7 +20,7 @@
 #define UTILS_HPP
 
 #include <vnepogodin/input_data.hpp>
-#include <vnepogodin/overlay.hpp>
+#include <vnepogodin/overlay_keyboard.hpp>
 #include <vnepogodin/overlay_mouse.hpp>
 #include <vnepogodin/uiohook_helper.hpp>
 
@@ -86,7 +86,7 @@ namespace utils {
     }  // namespace
     template <class T>
     constexpr void load_key(const nlohmann::json& json, T* object, const std::string& key) noexcept {
-        [[maybe_unused]] constexpr bool is_valid = std::is_same<T, Overlay>::value || std::is_same<T, OverlayMouse>::value;
+        [[maybe_unused]] constexpr bool is_valid = std::is_same<T, OverlayKeyboard>::value || std::is_same<T, OverlayMouse>::value;
         static_assert(is_valid, "Unknown type");
 
         if (json.contains(key)) {
@@ -94,7 +94,7 @@ namespace utils {
             return;
         }
 
-        if constexpr (std::is_same<T, Overlay>::value) {
+        if constexpr (std::is_same<T, OverlayKeyboard>::value) {
             object->setVisible(0);
         }
     }

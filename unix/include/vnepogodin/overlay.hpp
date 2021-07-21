@@ -31,7 +31,7 @@ class Overlay;
 }
 
 namespace vnepogodin {
-class Overlay final : public QWidget {
+class Overlay : public QWidget {
     Q_OBJECT
     Q_DISABLE_COPY(Overlay)
  public:
@@ -40,79 +40,64 @@ class Overlay final : public QWidget {
 
  protected:
     /**
-   * @fn paintEvent
-   * ----------
-   * @description: Overloads default paint constructor in order to render
-   * keyboard overlay svgs.
-   */
+     * Overloads default paint constructor in order to render overlay's svgs.
+     */
     void paintEvent(QPaintEvent*) override;
+
+    /**
+     * Paints a svg asset with a transparent background.
+     */
+    void paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale);
 
  private:
     /** Private Members */
-    bool keyboardConnected = false;
-    const int refresh_rate = 500;  // Frequency of keyboard input checking in hertz
+    bool connected         = false;
+    const int refresh_rate = 500;  // Frequency of input checking in hertz
     std::thread poll;
-    std::mutex data_mutex;
 
-    std::unique_ptr<input_data> handler = std::make_unique<input_data>();
-    std::unique_ptr<Ui::Overlay> ui     = std::make_unique<Ui::Overlay>();
+    std::unique_ptr<Ui::Overlay> ui = std::make_unique<Ui::Overlay>();
 
-    /**
-   * @fn connectKeyboard
-   * ----------
-   * @description: Trys to connect to keyboard.
-   * @returns: true if keyboard is connected and false if no connection can be
-   * made
-   */
-    bool connectKeyboard();
+    virtual const char* getSvgPath() const noexcept = 0;
 
     /**
-   * @fn paintButtons
-   * ----------
-   * @description: Helper function for paintEvent that paints buttons that are
-   * on.
-   */
-    void paintButtons(QPaintDevice* device, QPoint corner, double scale);
+     * Tries to connect to device.
+     * @return true if device is connected and false if no connection can be
+     * made
+     */
+    bool connect() noexcept;
 
     /**
-   * @fn paintFeatures
-   * ----------
-   * @description: Helper function for paintEvent that paints keyboard features
-   * that are on.
-   */
-    void paintFeatures(QPaintDevice* device, QPoint corner, double scale);
+     * Helper function for paintEvent that paints buttons that are
+     * on.
+     */
+    virtual void paintButtons(QPaintDevice* device, const QPoint& corner, const double& scale) = 0;
 
     /**
-   * @fn getScale
-   * ----------
-   * @returns: Returns the scale of the base keyboard svg.
-   * @p defaultSize is provided by a member function of the svg renderer
-   * @p viewBox is the size of the widget the svg is drawn on
-   */
-    double getScale(QSize defaultSize, QSize viewBox);
+     * Helper function for paintEvent that paints device's features
+     * that are on.
+     */
+    virtual void paintFeatures(QPaintDevice* device, const QPoint& corner, const double& scale);
 
     /**
-   * @fn locateCorner
-   * ----------
-   * @returns: Locates the corner point of the base keyboard svg on the widget.
-   * @p defaultSize is provided by a member function of the svg renderer
-   * @p viewBox is the size of the widget the svg is drawn on
-   */
-    QPoint locateCorner(QSize defaultSize, QSize viewBox);
+     * @param defaultSize is provided by a member function of the svg renderer
+     * @param viewBox is the size of the widget the svg is drawn on
+     *
+     * @return Returns the scale of the base svg.
+     */
+    double getScale(const QSize& defaultSize, const QSize& viewBox);
 
     /**
-   * @fn paintLoop
-   * ----------
-   * @description: Calls repaint on a thread for the specified refresh rate.
-   */
+     * @param defaultSize is provided by a member function of the svg renderer
+     * @param viewBox is the size of the widget the svg is drawn on
+     *
+     * @return Locates the corner point of the base svg on the widget.
+     */
+    QPoint locateCorner(const QSize& defaultSize, const QSize& viewBox);
+
+    /**
+     * Calls repaint on a thread for the specified refresh rate.
+     */
     void paintLoop();
-
-    /**
-   * @fn paintAsset
-   * ----------
-   * @description: Paints an svg asset with a transparent background.
-   */
-    inline void paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale);
 };
 }  // namespace vnepogodin
 

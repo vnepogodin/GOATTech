@@ -17,15 +17,9 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include <vnepogodin/overlay.hpp>
-#include <vnepogodin/utils.hpp>
 
-#include <array>
 #include <cmath>
-#include <fstream>
-#include <iostream>
-#include <string>
 
-#include <QMouseEvent>
 #include <QPainter>
 #include <QString>
 #include <QSvgRenderer>
@@ -36,17 +30,17 @@ Overlay::Overlay(QWidget* parent) : QWidget(parent) {
     ui->setupUi(this);
 
     setAttribute(Qt::WA_NativeWindow);
-    connectKeyboard();
+    connect();
 }
 
 void Overlay::paintEvent(QPaintEvent*) {
     // Initialize renderer with base asset
     QSvgRenderer renderer;
 
-    if (keyboardConnected)
-        renderer.load(QString(":/keyboard/base.svg"));
+    if (connected)
+        renderer.load(QString(getSvgPath()) + "base.svg");
     else
-        renderer.load(QString(":/keyboard/disconnected.svg"));
+        renderer.load(QString(getSvgPath()) + "disconnected.svg");
 
     renderer.setAspectRatioMode(Qt::KeepAspectRatio);
 
@@ -55,110 +49,72 @@ void Overlay::paintEvent(QPaintEvent*) {
     renderer.render(&painter);
     renderer.setViewBox(QRectF(0, 0, this->width(), this->height()));
 
-    if (keyboardConnected) {
-        QPoint corner = locateCorner(renderer.defaultSize(), renderer.viewBox().size());
-        double scale  = getScale(renderer.defaultSize(), renderer.viewBox().size());
+    if (connected) {
+        const auto& corner  = locateCorner(renderer.defaultSize(), renderer.viewBox().size());
+        const double& scale = getScale(renderer.defaultSize(), renderer.viewBox().size());
         paintFeatures(this, corner, scale);
     }
 }
 
-void Overlay::paintFeatures(QPaintDevice* device, QPoint corner, double scale) {
-    paintButtons(this, corner, scale);
+void Overlay::paintFeatures(QPaintDevice* device, const QPoint& corner, const double& scale) {
+    paintButtons(device, corner, scale);
 }
 
-QPoint Overlay::locateCorner(QSize defaultSize, QSize viewBox) {
-    double defaultAR = (double)defaultSize.width() / (double)defaultSize.height();
-    double viewAR    = (double)viewBox.width() / (double)viewBox.height();
+QPoint Overlay::locateCorner(const QSize& defaultSize, const QSize& viewBox) {
+    const double& defaultAR = static_cast<double>(defaultSize.width()) / defaultSize.height();
+    const double& viewAR    = static_cast<double>(viewBox.width()) / viewBox.height();
 
-    // @var arCoeff lets us know which side of the svg borders the widget
-    double arCoeff = viewAR / defaultAR;
-    double width, height;
-    int x, y;
+    // lets us know which side of the svg borders the widget
+    const double& arRatio = viewAR / defaultAR;
 
-    if (arCoeff > 1) {
-        height = (double)viewBox.height();
-        width  = height * defaultAR;
-        y      = 0;
-        x      = (int)(0.5 + ((double)viewBox.width() - width) / 2);
-    } else if (arCoeff < 1) {
-        width  = (double)viewBox.width();
-        height = width * 1 / defaultAR;
-        x      = 0;
-        y      = (int)(0.5 + ((double)viewBox.height() - height) / 2);
-    } else {
-        x = 0;
-        y = 0;
+    int x{};
+    int y{};
+
+    if (arRatio > 1) {
+        const double& height = viewBox.height();
+        const double& width  = height * defaultAR;
+        x                    = 0.5 + ((double)viewBox.width() - width) / 2;
+    } else if (arRatio < 1) {
+        const double& width  = viewBox.width();
+        const double& height = width * 1 / defaultAR;
+        y                    = 0.5 + ((double)viewBox.height() - height) / 2;
     }
 
-    return QPoint(x, y);
+    return {x, y};
 }
 
-double Overlay::getScale(QSize defaultSize, QSize viewBox) {
-    double result;
-    QPoint corner = locateCorner(defaultSize, viewBox);
+double Overlay::getScale(const QSize& defaultSize, const QSize& viewBox) {
+    const auto& corner = locateCorner(defaultSize, viewBox);
 
     // Since svg maintains aspect ratio, only height or width is needed
-    double width = (double)viewBox.width() - 2 * corner.x();
-    result       = width / (double)defaultSize.width();
-
-    return result;
+    const double& width = (double)viewBox.width() - 2 * corner.x();
+    return width / (double)defaultSize.width();
 }
 
-bool Overlay::connectKeyboard() {
-    // Start polling
-    keyboardConnected = false;
-
+bool Overlay::connect() noexcept {
     if (poll.joinable())
         poll.join();
 
-    keyboardConnected = true;
-    poll              = std::thread(&Overlay::paintLoop, this);
+    connected = true;
+    poll      = std::thread(&Overlay::paintLoop, this);
 
     return true;
 }
 
 void Overlay::paintLoop() {
-    while (keyboardConnected) {
+    while (connected) {
         update();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / refresh_rate));
     }
 }
 
 Overlay::~Overlay() {
-    keyboardConnected = false;
+    connected = false;
     poll.join();
 }
 
-void Overlay::paintButtons(QPaintDevice* device, QPoint corner, double scale) {
-    static constexpr frozen::unordered_map<uint32_t, std::pair<std::string_view, QPoint>, 9> button_map = {
-        {utils::key_code::W, {"w_button", {384, 0}}},
-        {utils::key_code::A, {"a_button", {169, 182}}},
-        {utils::key_code::S, {"s_button", {338, 182}}},
-        {utils::key_code::D, {"d_button", {508, 182}}},
-        {utils::key_code::Q, {"q_button", {210, 0}}},
-        {utils::key_code::E, {"e_button", {552, 0}}},
-        {utils::key_code::SHIFT, {"shift_button", {0, 182}}},
-        {utils::key_code::CONTROL, {"ctrl_button", {23, 360}}},
-        {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
-
-    std::lock_guard<std::mutex> lock(data_mutex);
-    (void)utils::handle_event(handler.get());
-    for (const auto& [button, value] : handler->keyboard) {
-        if (!value) {
-            continue;
-        }
-        for (const auto& [mask, asset] : button_map) {
-            if (mask == button) {
-                const QPoint& location = QPoint(std::round((double)asset.second.x() * scale) + corner.x(),
-                    std::round((double)asset.second.y() * scale) + corner.y());
-                paintAsset(asset.first.data(), location, device, scale);
-            }
-        }
-    }
-}
-
 void Overlay::paintAsset(std::string name, const QPoint& place, QPaintDevice* device, const double& scale) {
-    name = ":/keyboard/" + name + ".svg";
+    name = getSvgPath() + name + ".svg";
     QSvgRenderer renderer;
     renderer.load(QString(name.c_str()));
 
