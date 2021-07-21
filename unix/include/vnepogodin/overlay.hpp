@@ -51,8 +51,8 @@ class Overlay : public QWidget {
 
  private:
     /** Private Members */
-    bool connected         = false;
-    const int refresh_rate = 500;  // Frequency of input checking in hertz
+    bool connected                    = false;
+    static constexpr int refresh_rate = 600;  // Frequency of input checking in hertz
     std::thread poll;
 
     std::unique_ptr<Ui::Overlay> ui = std::make_unique<Ui::Overlay>();
