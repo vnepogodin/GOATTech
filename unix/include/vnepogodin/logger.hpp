@@ -29,15 +29,15 @@
 
 #include <chrono>
 #include <fstream>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 #include <vnepogodin/thirdparty/json.hpp>
 
 namespace {
 #ifdef _WIN32
 std::string_view get_process_list() {
-     // Take a snapshot of all processes in the system.
+    // Take a snapshot of all processes in the system.
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
     // Set the size of the structure before using it.

@@ -41,7 +41,8 @@ void OverlayKeyboard::paintButtons(QPaintDevice* device, const QPoint& corner, c
         {utils::key_code::E, {"e_button", {552, 0}}},
         {utils::key_code::SHIFT, {"shift_button", {0, 182}}},
         {utils::key_code::CONTROL, {"ctrl_button", {23, 360}}},
-        {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}};
+        {utils::key_code::SPACEBAR, {"space_button", {192, 360}}}
+    };
 
     std::lock_guard<std::mutex> lock(data_mutex);
     (void)utils::handle_event(handler.get());

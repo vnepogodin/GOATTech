@@ -22,8 +22,8 @@
 #include <ui_mainwindow.h>
 #include <vnepogodin/recorder.hpp>
 
-#include <memory>
 #include <array>
+#include <memory>
 
 #include <QAction>
 #include <QMainWindow>

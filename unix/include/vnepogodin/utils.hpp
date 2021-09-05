@@ -37,14 +37,16 @@
 namespace vnepogodin {
 namespace utils {
     namespace key_code {
-        static constexpr std::uint8_t LBUTTON  = MOUSE_BUTTON1;
+        static constexpr std::uint8_t LBUTTON = MOUSE_BUTTON1;
+        /* clang-format off */
 #ifndef _WIN32
-        static constexpr std::uint8_t RBUTTON  = MOUSE_BUTTON3;
-        static constexpr std::uint8_t MBUTTON  = MOUSE_BUTTON2;
+        static constexpr std::uint8_t RBUTTON = MOUSE_BUTTON3;
+        static constexpr std::uint8_t MBUTTON = MOUSE_BUTTON2;
 #else
-        static constexpr std::uint8_t RBUTTON  = MOUSE_BUTTON2;
-        static constexpr std::uint8_t MBUTTON  = MOUSE_BUTTON3;
+        static constexpr std::uint8_t RBUTTON = MOUSE_BUTTON2;
+        static constexpr std::uint8_t MBUTTON = MOUSE_BUTTON3;
 #endif
+        /* clang-format on */
         static constexpr std::uint8_t X1BUTTON = MOUSE_BUTTON4;
         static constexpr std::uint8_t X2BUTTON = MOUSE_BUTTON5;
 

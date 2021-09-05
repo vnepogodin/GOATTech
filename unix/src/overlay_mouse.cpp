@@ -37,7 +37,8 @@ void OverlayMouse::paintButtons(QPaintDevice* device, const QPoint& corner, cons
         {utils::key_code::RBUTTON, {"right_button", {512, 0}}},
         {utils::key_code::MBUTTON, {"middle_button", {415, 273}}},
         {utils::key_code::X1BUTTON, {"x_button", {2, 735}}},
-        {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}};
+        {utils::key_code::X2BUTTON, {"x_button", {41, 960}}}
+    };
 
     std::lock_guard<std::mutex> lock(data_mutex);
     (void)utils::handle_event(handler.get());
