@@ -109,6 +109,13 @@ MainWindow::MainWindow(QWidget* parent)
     setAttribute(Qt::WA_NativeWindow);
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowTransparentForInput | Qt::BypassWindowManagerHint | Qt::SplashScreen);
 
+#ifdef _WIN32
+    const auto& m_hwnd = (HWND)winId();
+    SetForegroundWindow(m_hwnd);
+    SetWindowPos(m_hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+#endif
+
     m_tray_icon = std::make_unique<QSystemTrayIcon>(this);
     m_process_settings->setProgram("GOATTech-settings");
     setMouseTracking(true);

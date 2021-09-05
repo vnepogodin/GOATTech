@@ -23,6 +23,7 @@
 #include <vnepogodin/recorder.hpp>
 
 #include <memory>
+#include <array>
 
 #include <QAction>
 #include <QMainWindow>

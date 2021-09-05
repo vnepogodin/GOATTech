@@ -28,16 +28,23 @@
 #include <chrono>
 #include <string_view>
 
+#ifndef _WIN32
 #include <frozen/unordered_map.h>
 #include <vnepogodin/thirdparty/HTTPRequest.hpp>
+#endif
 #include <vnepogodin/thirdparty/json.hpp>
 
 namespace vnepogodin {
 namespace utils {
     namespace key_code {
         static constexpr std::uint8_t LBUTTON  = MOUSE_BUTTON1;
+#ifndef _WIN32
         static constexpr std::uint8_t RBUTTON  = MOUSE_BUTTON3;
         static constexpr std::uint8_t MBUTTON  = MOUSE_BUTTON2;
+#else
+        static constexpr std::uint8_t RBUTTON  = MOUSE_BUTTON2;
+        static constexpr std::uint8_t MBUTTON  = MOUSE_BUTTON3;
+#endif
         static constexpr std::uint8_t X1BUTTON = MOUSE_BUTTON4;
         static constexpr std::uint8_t X2BUTTON = MOUSE_BUTTON5;
 
@@ -54,7 +61,11 @@ namespace utils {
     };  // namespace key_code
 
     namespace {
+#ifndef _WIN32
         static constexpr frozen::unordered_map<std::uint32_t, std::string_view, 14> code_list = {
+#else
+        static std::unordered_map<std::uint32_t, std::string_view> code_list = {
+#endif
             {vnepogodin::utils::key_code::W, "w_button"},
             {vnepogodin::utils::key_code::A, "a_button"},
             {vnepogodin::utils::key_code::S, "s_button"},
@@ -110,12 +121,14 @@ namespace utils {
     }
 
     inline void send_json() noexcept {
+#ifndef _WIN32
         static constexpr auto URL = "http://torrenttor.ru/api1/post/";
         http::Request request(URL);
 
         nlohmann::json json{{"timestamp", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now())}};
         [[maybe_unused]] const auto& response = request.send("POST", json.dump(),
             {"Content-Type: application/json"});
+#endif
     }
 };  // namespace utils
 }  // namespace vnepogodin

@@ -28,7 +28,11 @@ const char* OverlayKeyboard::getSvgPath() const noexcept {
 }
 
 void OverlayKeyboard::paintButtons(QPaintDevice* device, const QPoint& corner, const double& scale) {
+#ifndef _WIN32
     static constexpr frozen::unordered_map<uint32_t, std::pair<std::string_view, QPoint>, 9> button_map = {
+#else
+    static std::unordered_map<uint32_t, std::pair<std::string_view, QPoint>> button_map = {
+#endif
         {utils::key_code::W, {"w_button", {384, 0}}},
         {utils::key_code::A, {"a_button", {169, 182}}},
         {utils::key_code::S, {"s_button", {338, 182}}},

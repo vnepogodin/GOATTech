@@ -35,7 +35,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_CURRENT_SOURCE_DIR}/forms)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(CMAKE_GENERATOR STREQUAL "Ninja")
+if(UNIX AND CMAKE_GENERATOR STREQUAL "Ninja")
   if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-fcolor-diagnostics ${CMAKE_CXX_FLAGS}")
     set(CMAKE_C_FLAGS "-fcolor-diagnostics ${CMAKE_C_FLAGS}")
@@ -58,7 +58,7 @@ add_subdirectory(thirdparty)
 ##
 ## Target
 ##
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME} WIN32
     include/vnepogodin/buffer.hpp
     include/vnepogodin/uiohook_helper.hpp src/uiohook_helper.cpp
     include/vnepogodin/input_data.hpp src/input_data.cpp
@@ -77,12 +77,18 @@ add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+if(UNIX)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia uiohook frozen::frozen ${CMAKE_THREAD_LIBS_INIT})
+else()
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia uiohook ${CMAKE_THREAD_LIBS_INIT})
+endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+if(UNIX)
 add_custom_target(run
     COMMAND ./${PROJECT_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_target(run-settings
     COMMAND ./GOATTech-settings
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/settings)
+endif()

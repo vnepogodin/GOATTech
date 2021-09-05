@@ -28,7 +28,11 @@ const char* OverlayMouse::getSvgPath() const noexcept {
 }
 
 void OverlayMouse::paintButtons(QPaintDevice* device, const QPoint& corner, const double& scale) {
+#ifndef _WIN32
     static constexpr frozen::unordered_map<uint8_t, std::pair<std::string_view, QPoint>, 5> button_map = {
+#else
+    static std::unordered_map<uint8_t, std::pair<std::string_view, QPoint>> button_map = {
+#endif
         {utils::key_code::LBUTTON, {"left_button", {10, 0}}},
         {utils::key_code::RBUTTON, {"right_button", {512, 0}}},
         {utils::key_code::MBUTTON, {"middle_button", {415, 273}}},
