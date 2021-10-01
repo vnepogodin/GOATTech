@@ -29,6 +29,8 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
+        with:
+          version: '6.2.0'
       - name: Install Dependencies
         run: |
           sudo apt install libxtst-dev \
@@ -52,6 +54,8 @@ jobs:
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
+        with:
+          version: '6.2.0'
       - name: Install Dependencies
         run: |
           sudo apt install libxtst-dev \
