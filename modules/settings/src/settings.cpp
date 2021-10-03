@@ -19,8 +19,7 @@
 #include "settings.hpp"
 #include "utils.hpp"
 
-#include <QAudioDevice>
-#include <QMediaDevices>
+#include <QAudioRecorder>
 
 using namespace vnepogodin;
 
@@ -33,10 +32,10 @@ Settings::Settings(QWidget* parent)
     m_ui->setupUi(this);
 
     // get audio devices
-    const auto& input_list = QMediaDevices::audioInputs();
+    QAudioRecorder audio_recorder;
+    const auto& input_list = audio_recorder.audioInputs();
     std::for_each(input_list.cbegin(), input_list.cend(), [&](const auto& device) {
-        //m_ui->inputDevice->addItem(device, QVariant(device));
-        m_ui->inputDevice->addItem(device.description(), QVariant::fromValue(device));
+        m_ui->inputDevice->addItem(device, QVariant(device));
     });
 
     connect(m_ui->cancel, SIGNAL(clicked()), this, SLOT(on_cancel()));
@@ -45,7 +44,7 @@ Settings::Settings(QWidget* parent)
     connect(m_ui->isRun, SIGNAL(clicked()), this, SLOT(on_run()));
     connect(m_ui->hideKeyboard, SIGNAL(clicked()), this, SLOT(on_hideKeyboard()));
     connect(m_ui->hideMouse, SIGNAL(clicked()), this, SLOT(on_hideMouse()));
-    connect(m_ui->inputDevice, SIGNAL(textActivated(QString)), this, SLOT(on_inputDevice(QString)));
+    connect(m_ui->inputDevice, SIGNAL(activated(QString)), this, SLOT(on_inputDevice(QString)));
 
     detail::to_object(m_settings, json);
     utils::load_key(json, m_ui->isRun, "isRun");

@@ -42,7 +42,7 @@ namespace detail {
 
             const auto& value = settings->value(_);
             const auto& key   = _.toStdString();
-            switch ((QMetaType::Type)value.typeId()) {
+            switch ((QMetaType::Type)value.type()) {
             case QMetaType::Bool:
                 obj[key] = value.toBool();
                 break;

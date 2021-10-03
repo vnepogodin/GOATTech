@@ -18,7 +18,7 @@ endif()
 include(FindThreads)
 
 find_package(Threads REQUIRED)
-find_package(Qt6 COMPONENTS Widgets Multimedia REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Multimedia REQUIRED)
 
 ##
 ## CONFIGURATION
@@ -68,5 +68,5 @@ add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Multimedia ${CMAKE_THREAD_LIBS_INIT})
-target_include_directories(${PROJECT_NAME} PRIVATE ${Qt6Widgets_INCLUDES})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Multimedia ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(${PROJECT_NAME} PRIVATE ${Qt5Widgets_INCLUDES})
