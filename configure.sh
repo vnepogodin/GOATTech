@@ -51,7 +51,7 @@ for i in "$@"; do
   esac
 done
 
-cmake -S unix -B ${_buildpath}/${_buildtype} -DCMAKE_BUILD_TYPE=${_buildtype}
+cmake -S src -B ${_buildpath}/${_buildtype} -DCMAKE_BUILD_TYPE=${_buildtype}
 
 cat > build.sh <<EOF
 #!/bin/bash
