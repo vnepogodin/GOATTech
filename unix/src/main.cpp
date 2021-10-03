@@ -36,17 +36,17 @@ bool IsInstanceAlreadyRunning(QSharedMemory& memoryLock) {
 
 auto main(int argc, char** argv) -> std::int32_t {
     QSharedMemory sharedMemoryLock("GOATTech-lock");
-    if (IsInstanceAlreadyRunning(sharedMemoryLock)) {
+    if (IsInstanceAlreadyRunning(sharedMemoryLock))
         return -1;
-    }
 
     // Set application info
     QCoreApplication::setOrganizationName("torrenttor");
     QCoreApplication::setApplicationName("GOATTech");
 
     // Set application attributes
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
     vnepogodin::MainWindow w;
     w.showFullScreen();
-    return QApplication::exec();
+    return a.exec();
 }

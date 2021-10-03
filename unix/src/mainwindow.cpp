@@ -23,8 +23,8 @@
 #include <iostream>
 
 #include <QByteArray>
+#include <QDesktopWidget>
 #include <QMetaType>
-#include <QScreen>
 #include <QSettings>
 #include <QString>
 
@@ -34,9 +34,8 @@ void MainWindow::createMenu() noexcept {
     m_tray_menu = std::make_unique<QMenu>(this);
 
     m_tray_menu->addAction("Settings", [&] {
-        if (m_process_settings->state() == QProcess::NotRunning) {
+        if (m_process_settings->state() == QProcess::NotRunning)
             m_process_settings->open();
-        }
     });
     m_tray_menu->addAction("Quit", [&] {
         QApplication::quit();
@@ -44,16 +43,19 @@ void MainWindow::createMenu() noexcept {
 }
 
 void MainWindow::iconActivated(const QSystemTrayIcon::ActivationReason& reason) {
-    if (reason != QSystemTrayIcon::Trigger) {
-        return;
-    }
-    if (m_activated[0] != 2) {
-        m_ui->keyboard->setVisible(m_activated[0]);
-        m_activated[0] = !m_activated[0];
-    }
-    if (m_activated[1] != 2) {
-        m_ui->mouse->setVisible(m_activated[1]);
-        m_activated[1] = !m_activated[1];
+    switch (reason) {
+    case QSystemTrayIcon::Trigger:
+        if (m_activated[0] != 2) {
+            m_ui->keyboard->setVisible(m_activated[0]);
+            m_activated[0] = !m_activated[0];
+        }
+        if (m_activated[1] != 2) {
+            m_ui->mouse->setVisible(m_activated[1]);
+            m_activated[1] = !m_activated[1];
+        }
+        break;
+    default:
+        break;
     }
 }
 
@@ -119,22 +121,20 @@ MainWindow::MainWindow(QWidget* parent)
     setMouseTracking(true);
 
     // Set window position
-    const auto& rec         = QApplication::primaryScreen()->geometry();
+    const auto& rec         = QApplication::desktop()->geometry();
     const auto& window_size = this->size();
     move(0, rec.height() - window_size.height());
 
     // Calculate overlay percentage of the window
     static constexpr float perc_of_window = 0.18F;
-    const auto& perc_height               = static_cast<float>(rec.height()) * perc_of_window;
-    const auto& perc_width                = static_cast<float>(rec.width()) * perc_of_window;
+    const auto& perc_height               = rec.height() * perc_of_window;
+    const auto& perc_width                = rec.width() * perc_of_window;
 
     // Set proper widget size
-    static constexpr float fixed_scale = 1.5F;
-    const int& size                    = static_cast<int>(qMin(perc_height, perc_width));
+    const int& size = qMin(perc_height, perc_width);
 
     m_ui->keyboard->setFixedSize(size, size);
-    const int& mouse_fixed_size = static_cast<int>(static_cast<float>(size) / fixed_scale);
-    m_ui->mouse->setFixedSize(mouse_fixed_size, mouse_fixed_size);
+    m_ui->mouse->setFixedSize(size / 1.5, size / 1.5);
 
     // Tray icon menu
     createMenu();

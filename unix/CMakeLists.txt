@@ -24,7 +24,7 @@ include(ClangTidy)
 include(FindThreads)
 
 find_package(Threads REQUIRED)
-find_package(Qt6 COMPONENTS Widgets Svg Multimedia REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Svg Multimedia REQUIRED)
 
 ##
 ## CONFIGURATION
@@ -73,14 +73,14 @@ add_executable(${PROJECT_NAME} WIN32
     src/main.cpp ../assets/overlay.qrc
     )
 
-add_compile_definitions(${CMAKE_THREAD_DEFS_INIT} QT_DISABLE_DEPRECATED_BEFORE=0x050F00)
+add_compile_definitions(${CMAKE_THREAD_DEFS_INIT})
 add_compile_options(${CMAKE_CXX_FLAGS} ${CMAKE_THREAD_DEFS_INIT})
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 if(UNIX)
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Svg Qt6::Multimedia uiohook frozen::frozen ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia uiohook frozen::frozen ${CMAKE_THREAD_LIBS_INIT})
 else()
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Svg Qt6::Multimedia uiohook ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets Qt5::Svg Qt5::Multimedia uiohook ${CMAKE_THREAD_LIBS_INIT})
 endif()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

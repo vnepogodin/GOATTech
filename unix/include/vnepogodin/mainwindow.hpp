@@ -48,7 +48,7 @@ class MainWindow final : public QMainWindow {
  private:
     std::thread m_uiohock;
 
-    std::array<std::uint8_t, 2> m_activated{};
+    std::array<std::uint8_t, 2> m_activated;
 
     std::unique_ptr<vnepogodin::Recorder> m_recorder;
 

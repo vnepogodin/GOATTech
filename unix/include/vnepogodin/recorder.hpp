@@ -22,34 +22,30 @@
 #include <memory>
 #include <string_view>
 
-#include <QAudioInput>
-#include <QMediaCaptureSession>
-#include <QMediaRecorder>
+#include <QAudioRecorder>
 #include <QUrl>
 
 namespace vnepogodin {
 class Recorder final {
  public:
     Recorder() = default;
-    explicit Recorder(const std::string_view& device_name) {
-        QAudioInput* audioInput = new QAudioInput();
-        m_media_session->setAudioInput(audioInput);
-        m_media_session->setRecorder(m_media_recorder);
-        m_media_recorder->setOutputLocation(QUrl::fromLocalFile("/tmp/capture"));
+    explicit Recorder(const std::string_view& device_name)
+      : m_audio_recorder(new QAudioRecorder) {
+        m_audio_recorder->setAudioInput(device_name.data());
+        m_audio_recorder->setOutputLocation(QUrl::fromLocalFile("/tmp/capture"));
     }
 
-    inline void record() noexcept { m_media_recorder->record(); }
+    inline void record() noexcept { m_audio_recorder->record(); }
     inline void stop() noexcept {
-        if (m_media_recorder->recorderState() == QMediaRecorder::RecordingState) {
-            m_media_recorder->stop();
+        if (m_audio_recorder->state() == QMediaRecorder::RecordingState) {
+            m_audio_recorder->stop();
         }
     }
 
     virtual ~Recorder() = default;
 
  private:
-    QMediaRecorder* m_media_recorder{new QMediaRecorder};
-    std::unique_ptr<QMediaCaptureSession> m_media_session{new QMediaCaptureSession};
+    std::unique_ptr<QAudioRecorder> m_audio_recorder;
 };
 }  // namespace vnepogodin
 
