@@ -24,6 +24,6 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v2
       - name: Configure CMake
-        run: ./configure.sh
+        run: ./configure.sh --buildtype=$BUILD_TYPE
       - name: Build
         run: ./build.sh

@@ -40,7 +40,7 @@ jobs:
                            libxkbfile-dev
 
       - name: Configure CMake
-        run: ./configure.sh
+        run: ./configure.sh --buildtype=$BUILD_TYPE
       - name: Build
         run: ./build.sh
 
@@ -63,6 +63,6 @@ jobs:
                            libxkbfile-dev
 
       - name: Configure CMake
-        run: ./configure.sh
+        run: ./configure.sh --buildtype=$BUILD_TYPE
       - name: Build
         run: ./build.sh
