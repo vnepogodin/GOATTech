@@ -60,7 +60,7 @@ namespace utils {
         static constexpr std::uint32_t CONTROL   = VC_CONTROL_L;
         static constexpr std::uint32_t SPACEBAR  = VC_SPACE;
         static constexpr std::uint32_t UNDEFINED = VC_UNDEFINED;
-    };  // namespace key_code
+    }  // namespace key_code
 
     namespace {
 #ifndef _WIN32
@@ -132,7 +132,7 @@ namespace utils {
             {"Content-Type: application/json"});
 #endif
     }
-};  // namespace utils
+}  // namespace utils
 }  // namespace vnepogodin
 
 #endif  // UTILS_HPP
